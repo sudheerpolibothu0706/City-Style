@@ -1,18 +1,60 @@
-# Java / Spring Boot
-target/
-*.class
-*.jar
+# =========================
+# Generic / OS / IDE
+# =========================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+logs/
+*.out
 
 # IDEs
 .vscode/
 .idea/
 *.iml
+*.iws
 *.ipr
+*.class
+*.project
+*.classpath
+*.factorypath
 
-# Node / React
-node_modules/
-build/
+# =========================
+# Backend (Spring Boot)
+# =========================
+# Build directories
+backend/target/
+backend/build/
 
 # Environment files
-*.env
-secrets.env
+backend/secrets.env
+backend/*.env
+
+# Maven / Gradle wrappers
+!backend/.mvn/wrapper/maven-wrapper.jar
+*.jar
+*.war
+
+# Spring Boot specific
+spring.log
+
+# =========================
+# Frontend (React)
+# =========================
+frontend/node_modules/
+frontend/build/
+frontend/.env
+frontend/*.env
+
+# =========================
+# Others
+# =========================
+*.zip
+*.tar.gz
+*.tmp
