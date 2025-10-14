@@ -1,0 +1,18 @@
+# Java / Spring Boot
+target/
+*.class
+*.jar
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+*.ipr
+
+# Node / React
+node_modules/
+build/
+
+# Environment files
+*.env
+secrets.env
