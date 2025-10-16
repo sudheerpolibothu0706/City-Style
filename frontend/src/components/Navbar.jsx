@@ -31,7 +31,7 @@ const Navbar = () => {
       <div className="flex justify-between items-center py-5 px-5 sm:px-32 font-medium">
         
         <Link to={'/'}>
-          <img src={assets.CityStylelogo} className='w-[166px] h-[58px]' alt="Logo" />
+          <img src={assets.CityStylelogo} className='mb-5 w-32' alt="Logo" />
         </Link>
 
         
