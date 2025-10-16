@@ -34,57 +34,85 @@ function PlaceOrders() {
       country: "",
       phone: "",
     },
-    onSubmit: async (values) => {
-      try {
-        const orderItems = [];
+onSubmit: async (values) => {
+  try {
+    const orderItems = [];
 
-        for (const items in cartItems) {
-          for (const item in cartItems[items]) {
-            if (cartItems[items][item] > 0) {
-              const itemInfo = structuredClone(
-                products.find((product) => product._id === items)
-              );
-              if (itemInfo) {
-                itemInfo.size = item;
-                itemInfo.quantity = cartItems[items][item];
-                orderItems.push(itemInfo);
-              }
-            }
-          }
-        }
-
-        const orderData = {
-          address: values,
-          items: orderItems,
-          amount: getCartAmount() + delivery_fee,
-        };
-
-        if (token) {
-          const response = await axios.post(
-            backendUrl + "/api/v1/order/place",
-            orderData,
-            { headers: { Authorization: "Bearer " + token } }
+    for (const items in cartItems) {
+      for (const item in cartItems[items]) {
+        if (cartItems[items][item] > 0) {
+          const itemInfo = structuredClone(
+            products.find((product) => product._id === items)
           );
-
-          if (response.data.message) {
-            toast.success(response.data.message);
-            setCartItems({});
-            navigate("/orders");
-          } else {
-            toast.error(response.message);
+          if (itemInfo) {
+            itemInfo.size = item;
+            itemInfo.quantity = cartItems[items][item];
+            orderItems.push(itemInfo);
           }
-        } else {
-          toast.error("Login to place the order");
         }
-      } catch (err) {
-        console.log(err);
-        toast.error(err.message);
       }
-    },
+    }
+
+    const orderData = {
+      address: values,
+      items: orderItems,
+      amount: getCartAmount() + delivery_fee,
+    };
+
+    if (!token) {
+      toast.error("Login to place the order");
+      return;
+    }
+
+    // 🟢 If Stripe payment selected
+    if (method === "stripe") {
+      const paymentRequest = {
+        currency: "INR",
+        productName: "Cart Order",
+        amount: (getCartAmount() + delivery_fee) * 100, // convert to paise
+        quantity: 1,
+      };
+
+      console.log("Sending payment request:", paymentRequest);
+
+      const res = await axios.post(
+        `${backendUrl}/api/v1/payment/create-session`,
+        paymentRequest,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log("Stripe API Response:", res.data);
+
+      if (res.data.url) {
+        toast.success("Redirecting to Stripe Checkout...");
+        window.location.href = res.data.url; // ✅ Redirect to Stripe
+      } else {
+        toast.error(res.data.error || "Unable to create Stripe session");
+      }
+      return;
+    }
+
+    // 🟡 If COD selected
+    const response = await axios.post(
+      backendUrl + "/api/v1/order/place",
+      orderData,
+      { headers: { Authorization: "Bearer " + token } }
+    );
+
+    toast.success("Order placed successfully!");
+    setCartItems({});
+    navigate("/ordersuccess");
+  } catch (err) {
+    console.error("Payment error:", err);
+    toast.error("Unable to process your order. Please try again.");
+  }
+},
+
+
   });
 
   return (
-    <div className="place-order-page ml-32 mr-32">
+    <div>
       
       <form
         onSubmit={formik.handleSubmit}

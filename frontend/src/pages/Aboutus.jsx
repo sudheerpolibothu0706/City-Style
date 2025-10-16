@@ -5,7 +5,7 @@ import Subscribe from "../components/Subscribe";
 
 function About() {
   return (
-    <div className="ml-32 mr-32">
+    <div>
       <div className="text-2xl text-center pt-8 border-t ">
         <Title text1={"ABOUT"} text2={"US"} />
       </div>

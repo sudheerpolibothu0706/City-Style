@@ -5,7 +5,7 @@ import Subscribe from "../components/Subscribe";
 
 function Contact() {
   return (
-    <div className="ml-32 mr-32">
+    <div>
       <div className="text-center text-2xl pt-10 border-t">
         <Title text1={"CONTACT"} text2={"US"} />
       </div>

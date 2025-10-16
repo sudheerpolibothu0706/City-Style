@@ -14,7 +14,7 @@ const BestSeller = () => {
   }, [products]);
 
   return (
-    <div>
+    <div className="my-10">
       <div className="text-center py-8 text-3xl">
         <Title text1={"BEST"} text2={"SELLER"} />
         <p className="w-3/4 m-auto text-xs sm:text-sm md:text-base text-gray-700 font-semibold">
@@ -22,7 +22,11 @@ const BestSeller = () => {
           and comfort, these wardrobe favorites are tried, tested, and adored by our customers. From timeless classics to trend-setting designs, our best-selling collection is your shortcut to effortless style and confidence every day.
         </p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4  gap-y-6 pl-14 pr-14">
+      
+      {/* FIX APPLIED: Removed fixed pl-14 pr-14. Added responsive horizontal padding (px-4) 
+          for better mobile view, then remove it on small screens (sm:px-0) 
+          to let the products fill the container width. */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6 px-4 sm:px-0">
         {bestSeller.map((item) => (
           <ProductItem
             key={item._id}

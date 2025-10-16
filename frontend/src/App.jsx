@@ -7,7 +7,8 @@ import Myorders from "./pages/Myorders";
 import Login from "./pages/Login";
 import Aboutus from "./pages/Aboutus";
 import Product from "./pages/Product";
-
+import Sucess from "./pages/Sucess";
+import Failure from "./pages/Failure";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Cart from "./pages/Cart";
@@ -15,9 +16,10 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlaceOrders from "./pages/PlaceOrders";
 
+
 function App() {
   return (
-    <div>
+    <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
       <Navbar />
 
       <Routes>
@@ -33,8 +35,8 @@ function App() {
         
         <Route path="/place-order" element={<PlaceOrders/>}/>
         
-        <Route path="/success" element={<h1>Payment Successful 🎉</h1>} />
-        <Route path="/cancel" element={<h1>Payment Cancelled ❌</h1>} />
+        <Route path="/success" element={<Sucess/>}/>
+        <Route path="/cancel" element={<Failure/>} />
 
       </Routes>
 

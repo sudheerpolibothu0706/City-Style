@@ -3,30 +3,43 @@ import { assets } from '../assets/assets';
 
 const Hero = () => {
   return (
-    <div className='flex flex-row justify-center border border-gray-400 w-4/5 ml-32'> 
+   
+    <div className='flex flex-col sm:flex-row border border-gray-400'> 
 
       {/*Left side container*/}
-      <div className='flex justify-center items-center w-1/2 py-10'>
-            <div className='text-[#414141]'>
-            <div className='flex items-center gap-2'>
-              <p className="w-11 h-[2px] bg-[#414141]"></p>
-              <p className='text-2xl'>OUR BESTSELLERS</p>
-            </div>
-            <h1 className='py-3'>Latest Arrivals</h1>
-
-            <div className='flex items-center gap-2'>
-              <p className='text-2xl'>SHOP NOW</p>
-              <p className="w-11 h-[2px] bg-[#414141]"></p>
-            </div>
-            </div>
-       </div>
-
-       {/*Right side container*/}
-      <div className='w-1/2 h-96'>
-          <img src={assets.hero_img} className='object-cover h-full w-full' ></img>
-      </div>
-        
       
+      <div className='flex justify-center items-center w-full sm:w-1/2 py-10 sm:py-0'>
+        <div className='text-[#414141]'>
+          <div className='flex items-center gap-2'>
+         
+            <p className="w-8 md:w-11 h-[2px] bg-[#414141]"></p>
+            <p className='font-medium text-sm md:text-base uppercase'>
+              OUR BESTSELLERS
+            </p>
+          </div>
+          
+          <h1 className='capitalize text-3xl sm:py-3 lg:text-5xl leading-relaxed'>
+            Latest Arrivals
+          </h1>
+
+          <div className='flex items-center gap-2'>
+           
+            <p className='uppercase font-sm md:text-base font-semibold'>
+              SHOP NOW
+            </p>
+            
+            <p className="w-8 md:w-11 h-[1px] bg-[#414141]"></p>
+          </div>
+        </div>
+      </div>
+
+      {/*Right side container*/}
+      
+      <img 
+        src={assets.hero_img} 
+        alt="hero_img" 
+        className='w-full sm:w-1/2 object-cover' 
+      />
     </div>
   )
 }
