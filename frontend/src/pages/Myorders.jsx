@@ -6,9 +6,6 @@ import Title from "../components/Title";
 import axios from "axios";
 
 function Myorders () {
-
-
-
   const { currency, backendUrl, token } = useContext(shopContext);
   const [orderData, setOrderData] = useState([]);
   const loadOrderData = async () => {

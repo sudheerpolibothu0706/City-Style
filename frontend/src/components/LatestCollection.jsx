@@ -7,10 +7,10 @@ const LatestCollection = () => {
   const { products } = useContext(shopContext);
   const [latestProducts, setLatestProducts] = useState([]);
 
-  // FIX 1: Added 'products' to the dependency array.
+ 
   useEffect(() => {
     setLatestProducts(products.slice(0, 10));
-  }, [products]); // Should depend on 'products' to update when products load
+  }, [products]); 
 
   return (
     <div className="my-10">
@@ -22,8 +22,7 @@ const LatestCollection = () => {
         </p>
       </div>
       
-      {/* FIX 2: Removed fixed pl-14 pr-14 padding for better mobile view. 
-          The grid classes handle the internal spacing well. */}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6 px-4 sm:px-0">
       {
         latestProducts.map((item,index)=>(

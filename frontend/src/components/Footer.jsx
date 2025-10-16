@@ -16,7 +16,10 @@ const Footer = () => {
           <img src={assets.CityStylelogo} alt="Logo" className='mb-5 w-32' />
           {/* Description text styling: full width on mobile, 2/3 width on medium screens (md) */}
           <p className='w-full md:w-2/3 text-gray-600'>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ratione quis nobis molestias culpa nemo eius fugit esse sequi error. Molestias similique facere quae aliquam! Nisi modi distinctio hic pariatur minus.
+           The name City Style is synonymous with clothing, shoes, jackets, and accessories. 
+            In short span, we have become the destination of choice for young fashion-conscious 
+            women and men who want good quality, trendy, affordable Products that are as chic as their individual sense of style. 
+            Catering to a range of occasions, our collection includes denim, shirts, jackets, and more
           </p>
         </div>
 

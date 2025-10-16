@@ -64,12 +64,11 @@ onSubmit: async (values) => {
       return;
     }
 
-    // 🟢 If Stripe payment selected
     if (method === "stripe") {
       const paymentRequest = {
         currency: "INR",
         productName: "Cart Order",
-        amount: (getCartAmount() + delivery_fee) * 100, // convert to paise
+        amount: (getCartAmount() + delivery_fee) * 100,
         quantity: 1,
       };
 
@@ -85,14 +84,13 @@ onSubmit: async (values) => {
 
       if (res.data.url) {
         toast.success("Redirecting to Stripe Checkout...");
-        window.location.href = res.data.url; // ✅ Redirect to Stripe
+        window.location.href = res.data.url; 
       } else {
         toast.error(res.data.error || "Unable to create Stripe session");
       }
       return;
     }
 
-    // 🟡 If COD selected
     const response = await axios.post(
       backendUrl + "/api/v1/order/place",
       orderData,
@@ -118,7 +116,6 @@ onSubmit: async (values) => {
         onSubmit={formik.handleSubmit}
         className="flex flex-col sm:flex-row justify-between gap-4 pt-2 sm:pt-14 min-h-[80vh] border-t"
       >
-        {/* ---------------Left side-------------------- */}
         <div className="flex flex-col gap-4 w-full sm:max-w-[480px]">
           <div className="text-xl sm:text-2xl my-3">
             <Title text1={"DELIVERY"} text2={"INFORMATION"} />
@@ -211,17 +208,13 @@ onSubmit: async (values) => {
             className="border border-gray-300 rounded py-1.5 px-3.5 w-full"
           />
         </div>
-
-        {/* -----------Right Side -------------- */}
         <div className="mt-8">
           <div className="mt-8 min-w-80">
-           
             <CartTotal />
           </div>
 
           <div className="mt-12">
             <Title text1={"PAYMENT"} text2={"METHOD"} />
-            {/* ------------- payment Method section -------------- */}
             <div className="flex gap-3 flex-col lg:flex-row">
               <div
                 onClick={() => setMethod("stripe")}
