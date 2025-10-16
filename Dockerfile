@@ -11,6 +11,10 @@ ARG PROJECT_PATH=backend/city-style-application
 # Copy Maven wrapper files and pom.xml from the nested directory
 COPY ${PROJECT_PATH}/.mvn/ .mvn
 COPY ${PROJECT_PATH}/mvnw ${PROJECT_PATH}/pom.xml ./
+
+# === CRITICAL FIX: Add executable permission to the Maven Wrapper ===
+RUN chmod +x ./mvnw
+
 # Download dependencies to cache them
 RUN ./mvnw dependency:go-offline
 
@@ -18,16 +22,12 @@ RUN ./mvnw dependency:go-offline
 COPY ${PROJECT_PATH}/src ./src
 
 # Build the application (creates the JAR file), skipping tests
-# We run the build command *without* specifying the PROJECT_PATH here 
-# because all necessary files are now in the container's WORKDIR (/app)
 RUN ./mvnw clean install -DskipTests
 
 # Stage 2: Create the final, smaller runtime image
 FROM eclipse-temurin:21-jre-jammy
 
 # Set the argument for the application JAR file name
-# Note: Since the build was run in /app, the JAR is located at target/*.jar 
-# relative to the current container context.
 ARG JAR_FILE=target/*.jar
 
 # Copy the built JAR file from the 'build' stage into the final image
