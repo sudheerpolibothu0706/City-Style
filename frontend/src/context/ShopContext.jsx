@@ -11,7 +11,8 @@ export const ShopContextProvider = ({ children }) => {
   const currency = "₹";
   const delivery_fee = 40;
   const navigate = useNavigate();
-  const backendUrl = "http://localhost:8080";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 
   
   const addToCart = (productId, size = "M", quantity = 1) => {

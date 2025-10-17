@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/user/*").permitAll()
                 .anyRequest().authenticated()
             )
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // stateless for JWT
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) 
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 
@@ -48,7 +48,8 @@ public class SecurityConfig {
 
             configuration.setAllowedOrigins(List.of(
                     "http://localhost:5173",   // Vite
-                    "http://localhost:3000"    // CRA
+                    "http://localhost:3000" ,	// CRA
+                    "https://city-style.vercel.app/" // vercel
             ));
             configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             configuration.setAllowedHeaders(List.of("*"));

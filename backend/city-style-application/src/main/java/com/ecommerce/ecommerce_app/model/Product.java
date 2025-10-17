@@ -30,7 +30,7 @@ public class Product {
 
     // 👇 New field for storing available sizes
     @ElementCollection
-    @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))
+     @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "size")
     private List<String> sizes;
 
