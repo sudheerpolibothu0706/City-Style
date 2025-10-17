@@ -11,7 +11,7 @@ export const ShopContextProvider = ({ children }) => {
   const currency = "₹";
   const delivery_fee = 40;
   const navigate = useNavigate();
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = https://city-style.onrender.com;
 
 
   
