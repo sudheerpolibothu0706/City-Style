@@ -20,7 +20,7 @@ public class PaymentService {
 	@Value("${stripe.cancel.url}")
 	private String cancelUrl;
 	
-	@Value("${stripe.api.key}")
+	@Value("${stripe.secret.key}")
 	private String stripeApiKey;
 
 	@PostConstruct

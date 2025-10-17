@@ -11,14 +11,16 @@ import com.ecommerce.ecommerce_app.service.OrderService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders") // Matches your frontend route
+@RequestMapping("/api/v1/orders") // Matches your frontend route
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
 
     // Data Transfer Object for checkout (simplified request body)
-    public record CheckoutRequest(String shippingAddress, String billingAddress) {}
+    public record CheckoutRequest(String shippingAddress, String billingAddress) {
+    	
+    }
 
     // 1. PLACE ORDER (CHECKOUT): POST /api/orders
     // Requires Authentication

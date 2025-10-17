@@ -20,9 +20,10 @@ public class PaymentController {
     @PostMapping("/create-session")
     public ResponseEntity<PaymentResponsedto> checkOut(@RequestBody PaymentRequestdto request) {
         try {
+        	System.out.println("payment controller to create session");
             String sessionUrl = paymentService.createSession(request);
             PaymentResponsedto response = new PaymentResponsedto(sessionUrl, null);
-
+            System.out.println("session created sucessful");
             return ResponseEntity.status(HttpStatus.OK).body(response);
             }
         catch (StripeException e) {
