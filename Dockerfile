@@ -1,40 +1,51 @@
+# =========================
 # Stage 1: Build the application
-# Using Eclipse Temurin for a reliable JDK base for building
+# =========================
 FROM eclipse-temurin:21-jdk-jammy AS build
 
-# Set the working directory inside the container
+# Set working directory inside the container
 WORKDIR /app
 
-# The path to your nested Spring Boot project folder
+# Path to your nested Spring Boot project
 ARG PROJECT_PATH=backend/city-style-application
 
-# Copy Maven wrapper files and pom.xml from the nested directory
+# Copy Maven wrapper and pom.xml
 COPY ${PROJECT_PATH}/.mvn/ .mvn
 COPY ${PROJECT_PATH}/mvnw ${PROJECT_PATH}/pom.xml ./
 
-# === CRITICAL FIX: Add executable permission to the Maven Wrapper ===
+# Make Maven wrapper executable
 RUN chmod +x ./mvnw
 
-# Download dependencies to cache them
+# Download dependencies (caches them in a separate layer)
 RUN ./mvnw dependency:go-offline
 
-# Copy the rest of the source code
+# Copy the source code
 COPY ${PROJECT_PATH}/src ./src
 
-# Build the application (creates the JAR file), skipping tests
-RUN ./mvnw clean install -DskipTests
+# Build the Spring Boot application (skip tests to speed up build)
+RUN ./mvnw clean package -DskipTests
 
-# Stage 2: Create the final, smaller runtime image
+# =========================
+# Stage 2: Runtime image
+# =========================
 FROM eclipse-temurin:21-jre-jammy
 
-# Set the argument for the application JAR file name
-ARG JAR_FILE=target/*.jar
+# Set working directory
+WORKDIR /app
 
-# Copy the built JAR file from the 'build' stage into the final image
-COPY --from=build /app/${JAR_FILE} app.jar
+# Copy the built JAR from the build stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Application Configuration
-ENV PORT 8080
+# Set environment variables for Render
+ENV PORT=8080 \
+    SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL} \
+    SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME} \
+    SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD} \
+    JWT_SECRET_KEY=${JWT_SECRET_KEY} \
+    STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
 
-# The command to run the application when the container starts
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Expose the application port
+EXPOSE 8080
+
+# Run the Spring Boot application
+ENTRYPOINT ["java", "-jar", "app.jar"]
