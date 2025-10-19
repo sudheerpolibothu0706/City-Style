@@ -55,20 +55,14 @@ const Navbar = () => {
         </ul>
 
         
-        <div className='flex flex-row gap-5 items-center'>
-          {/* Search */}
-          <img src={assets.search_icon} className='w-5 h-5 cursor-pointer' alt="Search" />
-
-          
-          <div className="relative">
+        <div className="relative hidden sm:block">
             <img
               src={assets.profile_icon}
               alt="Profile"
               className="w-5 h-5 cursor-pointer"
               onClick={handleProfileClick}
             />
-
-            
+          
             {token && showDropdown && (
               <div
                 className="absolute right-0 mt-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded shadow-lg transition-all duration-200 z-20"
@@ -100,6 +94,7 @@ const Navbar = () => {
               </div>
             )}
           </div>
+
 
           
           <div className='relative'>
