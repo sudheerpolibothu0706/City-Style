@@ -117,11 +117,12 @@ const Navbar = () => {
       </div>
 
       {/* ---------------- Mobile Menu ---------------- */}
-      <div
-        className={`fixed top-0 right-0 w-full h-screen bg-white flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${
-          menuOpen ? 'translate-x-0' : 'translate-x-full'
+     <div
+      className={`fixed top-0 right-0 w-full h-screen bg-white flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${
+        menuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
-      >
+        >
+
         <img
           src={assets.cross_icon}
           onClick={() => setMenuOpen(false)}
