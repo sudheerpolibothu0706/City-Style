@@ -17,7 +17,7 @@ function About() {
         />
          <div className="flex flex-col border-none justify-center gap-6 md:w-2/4 text-gray-600">
           <p>
-            The name City Style is synonymous with clothing, shoes, jackets, and accessories. 
+            The name City Style is synonymous with clothing, jackets and accessories. 
             In short span, we have become the destination of choice for young fashion-conscious 
             women and men who want good quality, trendy, affordable Products that are as chic as their individual sense of style. 
             Catering to a range of occasions, our collection includes denim, shirts, jackets, and more.

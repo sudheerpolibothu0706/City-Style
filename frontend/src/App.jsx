@@ -1,4 +1,5 @@
-import { Route, Routes } from "react-router-dom";
+import React, { useEffect } from "react"; // Import useEffect
+import { Route, Routes, useLocation } from "react-router-dom"; // Import useLocation
 import Home from "./pages/Home";
 import Contactus from "./pages/Contactus";
 import Collection from "./pages/Collection";
@@ -15,10 +16,14 @@ import Cart from "./pages/Cart";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlaceOrders from "./pages/PlaceOrders";
-
+import OurPolicy from "./components/OurPolicy";
 
 function App() {
-  return (
+  const location = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]); 
+  return ( 
     <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
       <Navbar />
 
@@ -32,7 +37,7 @@ function App() {
         <Route path="/myorders" element={<Myorders />} />
         <Route path="/product/:productId" element={<Product />} />
         <Route path="/aboutus" element={<Aboutus />} />
-        
+        <Route path="/policy" element={<OurPolicy />} />
         <Route path="/place-order" element={<PlaceOrders/>}/>
         
         <Route path="/success" element={<Sucess/>}/>

@@ -2,8 +2,9 @@ import React, { useContext, useEffect, useState } from "react";
 import { shopContext } from "../context/ShopContext";
 import Title from "./Title";
 import ProductItem from "./ProductItem";
+import { Link } from "react-router-dom";
 
-function RelatedProducts({ category, subCategory }) {
+function RelatedProducts({ category, subCategory, id }) {
   const { products } = useContext(shopContext);
   const [related, setRelated] = useState([]);
 
@@ -27,7 +28,7 @@ function RelatedProducts({ category, subCategory }) {
         {related?.map((item) => {
           const { _id, name, price, image } = item;
           return (
-            <ProductItem key={_id} name={name} price={price} image={image} />
+            <ProductItem key={_id} id={_id} name={name} price={price} image={image} />
           );
         })}
       </div>
