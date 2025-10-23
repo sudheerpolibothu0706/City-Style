@@ -25,13 +25,10 @@ public class Order {
    // private OrderStatus status; 
 
     private BigDecimal totalAmount;
-
-    // Billing/Shipping information collected during checkout
     private String shippingAddress; 
     private String billingAddress;
 
-    // One-to-Many relationship with OrderItem (the details of the products ordered)
-    // This uses CascadeType.ALL to save items when the order is saved
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 

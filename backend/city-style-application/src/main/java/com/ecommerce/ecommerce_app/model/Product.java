@@ -25,16 +25,25 @@ public class Product {
     private Integer stockQuantity;
 
     private String category;
-
-    private String imageUrl;
-
-    // 👇 New field for storing available sizes
+    
     @ElementCollection
-     @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url")
+    private List<String> imageUrls; 
+
+    public List<String> getImageUrls() {
+		return imageUrls;
+	}
+
+	public void setImageUrls(List<String> imageUrls) {
+		this.imageUrls = imageUrls;
+	}
+
+	@ElementCollection
+    @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "size")
     private List<String> sizes;
 
-    // ✅ Getters and Setters
     public Long getId() {
         return id;
     }
@@ -81,14 +90,6 @@ public class Product {
 
     public void setCategory(String category) {
         this.category = category;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
     }
 
     public List<String> getSizes() {

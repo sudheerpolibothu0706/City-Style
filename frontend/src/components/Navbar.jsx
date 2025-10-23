@@ -31,9 +31,8 @@ const Navbar = () => {
 
         {/* Logo */}
         <Link to={'/'}>
-          <img src={assets.CityStylelogo} className='mb-5 w-32' alt="Logo" />
+          <img src='https://res.cloudinary.com/dg3lkz3jn/image/upload/v1761219610/city-style/products/fq80xvsbzwadj4pgmetu.png' className='mb-5 w-32' alt="Logo" />
         </Link>
-
         <ul className='hidden sm:flex flex-row gap-5 text-sm'>
           <NavLink to='/' className='flex flex-col items-center text-gray-700 hover:text-black'>
             <p>HOME</p>
