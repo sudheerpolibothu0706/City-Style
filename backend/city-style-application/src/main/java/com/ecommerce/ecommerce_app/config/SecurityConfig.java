@@ -32,8 +32,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/health").permitAll() 
-                .requestMatchers("/api/v1/user/*").permitAll()
+                .requestMatchers("/health").permitAll()
+                .requestMatchers("/api/admin/upload-images").permitAll()
+                .requestMatchers("/api/v1/user/**", "/api/v1/products/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) 
@@ -48,10 +49,10 @@ public class SecurityConfig {
             CorsConfiguration configuration = new CorsConfiguration();
 
             configuration.setAllowedOrigins(List.of(
-                    "http://localhost:5173",   // Vite
-                    "http://localhost:3000" ,	// CRA
-                    "https://city-style.vercel.app/" // vercel
-            ));
+            	    "http://localhost:5173",
+            	    "http://localhost:3000",
+            	    "https://city-style.vercel.app/"
+            	));
             configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             configuration.setAllowedHeaders(List.of("*"));
             configuration.setAllowCredentials(true);
