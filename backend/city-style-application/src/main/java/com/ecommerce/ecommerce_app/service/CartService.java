@@ -24,7 +24,7 @@ public class CartService {
     @Autowired private UserRepository userRepository;
     @Autowired private ProductRepository productRepository;
 
-    // Example mapping: frontend string ID -> backend Long ID
+    
     private static final Map<String, Long> frontendIdToBackendId = Map.of(
             "aaaaa", 101L,
             "bbbbb", 102L
@@ -57,12 +57,12 @@ public class CartService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
 
-        // Ensure cartItems list is initialized
+        
         if (cart.getCartItems() == null) {
             cart.setCartItems(new ArrayList<>());
         }
 
-        // Check if item already exists
+        
         Optional<CartItem> existingItem = cart.getCartItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst();
