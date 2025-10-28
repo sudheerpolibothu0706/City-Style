@@ -105,6 +105,7 @@ export const ShopContextProvider = ({ children }) => {
         setToken,
         loading,
         error,
+        backendUrl
       }}
     >
       {children}
