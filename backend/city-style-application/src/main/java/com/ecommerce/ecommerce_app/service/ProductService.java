@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import com.ecommerce.ecommerce_app.dto.ProductRequestDto;
 import com.ecommerce.ecommerce_app.dto.ProductResponseDto;
 import com.ecommerce.ecommerce_app.model.Product;
+import com.ecommerce.ecommerce_app.model.ProductImageUrls;
+import com.ecommerce.ecommerce_app.model.ProductSizes;
 import com.ecommerce.ecommerce_app.repository.ProductRepository;
 
 import java.util.List;
@@ -23,14 +25,33 @@ public class ProductService {
         product.setDescription(dto.getDescription());
         product.setCategory(dto.getCategory());
         product.setPrice(dto.getPrice());
-        product.setSizes(dto.getSizes());
         product.setStockQuantity(dto.getStockQuantity());
-        product.setImageUrls(dto.getImageUrls());
+
+        if (dto.getSizes() != null) {
+            List<ProductSizes> sizes = dto.getSizes().stream().map(sizeStr -> {
+                ProductSizes size = new ProductSizes();
+                size.setSize(sizeStr);
+                size.setProduct(product); 
+                return size;
+            }).collect(Collectors.toList());
+            product.setSizes(sizes);
+        }
+
+        if (dto.getImageUrls() != null) {
+            List<ProductImageUrls> images = dto.getImageUrls().stream().map(url -> {
+                ProductImageUrls img = new ProductImageUrls();
+                img.setImageUrl(url);
+                img.setProduct(product); 
+                return img;
+            }).collect(Collectors.toList());
+            product.setImageUrls(images);
+        }
 
         Product savedProduct = productRepository.save(product);
 
         return toResponseDto(savedProduct, "Product saved successfully");
     }
+
 
     public List<ProductResponseDto> getAllProducts() {
         return productRepository.findAll()
@@ -54,9 +75,9 @@ public class ProductService {
         existingProduct.setDescription(dto.getDescription());
         existingProduct.setCategory(dto.getCategory());
         existingProduct.setPrice(dto.getPrice());
-        existingProduct.setSizes(dto.getSizes());
+        //existingProduct.setSizes(dto.getSizes());
         existingProduct.setStockQuantity(dto.getStockQuantity());
-        existingProduct.setImageUrls(dto.getImageUrls());
+        //existingProduct.setImageUrls(dto.getImageUrls());
 
         Product updated = productRepository.save(existingProduct);
 
@@ -79,8 +100,23 @@ public class ProductService {
         response.setName(product.getName());
         response.setDescription(product.getDescription());
         response.setPrice(product.getPrice());
-        response.setImageUrls(product.getImageUrls());
         response.setStockQuantity(product.getStockQuantity());
+
+        if (product.getSizes() != null) {
+            List<String> sizes = product.getSizes().stream()
+                    .map(ProductSizes::getSize)
+                    .collect(Collectors.toList());
+            response.setSizes(sizes);
+        }
+
+        if (product.getImageUrls() != null) {
+            List<String> imageUrls = product.getImageUrls().stream()
+                    .map(ProductImageUrls::getImageUrl)
+                    .collect(Collectors.toList());
+            response.setImageUrls(imageUrls);
+        }
+
         return response;
     }
+
 }

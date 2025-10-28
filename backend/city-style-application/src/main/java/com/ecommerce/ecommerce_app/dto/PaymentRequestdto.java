@@ -3,11 +3,9 @@ package com.ecommerce.ecommerce_app.dto;
 
 public class PaymentRequestdto {
 
-  //  private List<CheckOutItems> items;
-    
     private String currency;
     private String productName;
-    private Long amount;   // in smallest unit (cents/paise)
+    private Long amount;   
     private Long quantity;
     
 	public String getCurrency() {
@@ -34,8 +32,5 @@ public class PaymentRequestdto {
 	public void setQuantity(Long quantity) {
 		this.quantity = quantity;
 	}
-    
-	
-    
-    
+   
 }

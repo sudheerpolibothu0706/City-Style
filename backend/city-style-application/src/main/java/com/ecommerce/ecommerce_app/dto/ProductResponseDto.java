@@ -7,6 +7,7 @@ public class ProductResponseDto {
 	private String message;
     private String name;
     private Long id;
+    private List<String> sizes;
     private List<String> imageUrls;
 	private String description;
     private BigDecimal price;
@@ -25,6 +26,12 @@ public class ProductResponseDto {
 	}
     public Long getId() {
 		return id;
+	}
+	public List<String> getSizes() {
+		return sizes;
+	}
+	public void setSizes(List<String> sizes) {
+		this.sizes = sizes;
 	}
 	public void setId(Long id) {
 		this.id = id;
