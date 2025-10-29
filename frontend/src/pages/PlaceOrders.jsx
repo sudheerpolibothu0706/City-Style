@@ -42,7 +42,7 @@ onSubmit: async (values) => {
       for (const item in cartItems[items]) {
         if (cartItems[items][item] > 0) {
           const itemInfo = structuredClone(
-            products.find((product) => product._id === items)
+            products.find((product) => product.id === items)
           );
           if (itemInfo) {
             itemInfo.size = item;
@@ -64,32 +64,41 @@ onSubmit: async (values) => {
       return;
     }
 
-    if (method === "stripe") {
-      const paymentRequest = {
-        currency: "INR",
-        productName: "Cart Order",
-        amount: (getCartAmount() + delivery_fee) * 100,
-        quantity: 1,
-      };
 
-      console.log("Sending payment request:", paymentRequest);
+      if (method === "stripe") {
+        const pendingRes = await axios.post(
+          `${backendUrl}/api/v1/order/pending`,
+          orderData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      const res = await axios.post(
-        `${backendUrl}/api/v1/payment/create-session`,
-        paymentRequest,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        const pendingOrderId = pendingRes.data?.pendingOrderId;
+        if (!pendingOrderId) {
+          toast.error("Unable to create pending order. Please try again.");
+          return;
+        }
+        const paymentRequest = {
+          currency: "INR",
+          productName: "Cart Order",
+          amount: (getCartAmount() + delivery_fee) * 100,
+          quantity: 1,
+          pendingOrderId, 
+        };
 
-      console.log("Stripe API Response:", res.data);
+        const res = await axios.post(
+          `${backendUrl}/api/v1/payment/create-session`,
+          paymentRequest,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      if (res.data.url) {
-        toast.success("Redirecting to Stripe Checkout...");
-        window.location.href = res.data.url; 
-      } else {
-        toast.error(res.data.error || "Unable to create Stripe session");
+        if (res.data.url) {
+          toast.success("Redirecting to Stripe Checkout...");
+          window.location.href = res.data.url;
+        } else {
+          toast.error(res.data.error || "Stripe session creation failed");
+        }
+        return;
       }
-      return;
-    }
 
     const response = await axios.post(
       backendUrl + "/api/v1/order/place",
@@ -99,14 +108,12 @@ onSubmit: async (values) => {
 
     toast.success("Order placed successfully!");
     setCartItems({});
-    navigate("/ordersuccess");
+    navigate("/orders");
   } catch (err) {
     console.error("Payment error:", err);
     toast.error("Unable to process your order. Please try again.");
   }
 },
-
-
   });
 
   return (
