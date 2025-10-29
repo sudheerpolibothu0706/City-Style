@@ -24,14 +24,6 @@ public class CartService {
     @Autowired private UserRepository userRepository;
     @Autowired private ProductRepository productRepository;
 
-    
-    private static final Map<String, Long> frontendIdToBackendId = Map.of(
-            "aaaaa", 101L,
-            "bbbbb", 102L
-            // add more mappings as needed
-    );
-
-    // Utility method to get or create a user's cart
     @Transactional
     public Cart getOrCreateCart(String username) {
         User user = userRepository.findByEmail(username)
@@ -41,30 +33,31 @@ public class CartService {
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setUser(user);
+                    newCart.setCartItems(new ArrayList<>()); // Initialize list for safety
                     return cartRepository.save(newCart);
                 });
     }
 
-    // Add item using frontend string ID
-    public Cart addItemToCart(String username, String frontendProductId, int quantity) {
-        Long productId = frontendIdToBackendId.get(frontendProductId);
+    public Cart addItemToCart(String username, Long productId, int quantity, String size) {
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
-        if (productId == null) {
-            throw new RuntimeException("Invalid product ID from frontend: " + frontendProductId);
-        }
+        Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
+            Cart newCart = new Cart();
+            newCart.setUser(user);
+            newCart.setCartItems(new ArrayList<>()); // Initialize list for safety
+            return cartRepository.save(newCart);
+        });
 
-        Cart cart = getOrCreateCart(username);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
 
-        
         if (cart.getCartItems() == null) {
             cart.setCartItems(new ArrayList<>());
         }
-
         
         Optional<CartItem> existingItem = cart.getCartItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
+                .filter(item -> item.getProduct().getId().equals(productId) && Objects.equals(item.getSize(), size))
                 .findFirst();
 
         if (existingItem.isPresent()) {
@@ -76,11 +69,36 @@ public class CartService {
             newItem.setCart(cart);
             newItem.setProduct(product);
             newItem.setQuantity(quantity);
-
+            newItem.setSize(size); // Set size here
             cartItemRepository.save(newItem);
             cart.getCartItems().add(newItem);
         }
 
         return cartRepository.save(cart);
+    }
+    
+    @Transactional
+    public Cart removeItemFromCart(String username, Long cartItemId) {
+        Cart cart = getOrCreateCart(username);
+
+        boolean removed = cart.getCartItems().removeIf(item -> 
+            item.getId() != null && item.getId().equals(cartItemId)
+        );
+
+        if (removed) {
+             return cartRepository.save(cart); 
+        } else {
+             throw new RuntimeException("Cart item not found with ID: " + cartItemId);
+        }
+    }
+
+    @Transactional
+    public void clearCart(String username) {
+        Cart cart = getOrCreateCart(username);
+        
+        if (cart.getCartItems() != null) {
+            cart.getCartItems().clear(); 
+            cartRepository.save(cart);
+        }
     }
 }
