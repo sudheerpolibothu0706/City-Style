@@ -52,7 +52,6 @@ public class PaymentService {
                  .build();
 
          Session session = Session.create(params);
-         return session.getUrl(); // Only return the session URL
+         return session.getUrl(); 
      }
  }
-
