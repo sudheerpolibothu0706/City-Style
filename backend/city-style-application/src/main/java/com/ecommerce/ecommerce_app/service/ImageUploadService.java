@@ -29,5 +29,4 @@ public class ImageUploadService {
         }
         return urls;
     }
-
 }
