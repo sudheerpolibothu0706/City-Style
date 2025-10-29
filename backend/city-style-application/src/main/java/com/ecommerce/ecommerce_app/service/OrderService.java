@@ -1,21 +1,15 @@
 package com.ecommerce.ecommerce_app.service;
 
-import jakarta.transaction.Transactional; 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ecommerce.ecommerce_app.model.Cart;
-import com.ecommerce.ecommerce_app.model.CartItem;
-import com.ecommerce.ecommerce_app.model.Order;
-import com.ecommerce.ecommerce_app.model.OrderItem;
-import com.ecommerce.ecommerce_app.model.Product;
-import com.ecommerce.ecommerce_app.model.User;
-import com.ecommerce.ecommerce_app.repository.CartRepository;
-import com.ecommerce.ecommerce_app.repository.OrderRepository;
-import com.ecommerce.ecommerce_app.repository.ProductRepository;
-import com.ecommerce.ecommerce_app.repository.UserRepository;
+import com.ecommerce.ecommerce_app.dto.OrderStatus;
+import com.ecommerce.ecommerce_app.model.*;
+import com.ecommerce.ecommerce_app.repository.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,38 +17,39 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     @Autowired
-	public OrderRepository orderRepository;
+    public OrderRepository orderRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private CartService cartService;
     @Autowired private ProductRepository productRepository;
     @Autowired private CartRepository cartRepository;
-	
+    
     @Transactional
     public Order placeOrder(String username, String shippingAddress, String billingAddress) {
-        
+
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found."));
 
         Cart cart = cartService.getOrCreateCart(username);
         List<CartItem> cartItems = cart.getCartItems();
 
-        if (cartItems.isEmpty()) {
+        if (cartItems == null || cartItems.isEmpty()) {
             throw new RuntimeException("Cannot place order: Cart is empty.");
         }
+
         Order newOrder = new Order();
-        newOrder.setUser(user); 
+        newOrder.setUser(user);
+        newOrder.setStatus(OrderStatus.PENDING); 
         newOrder.setShippingAddress(shippingAddress);
         newOrder.setBillingAddress(billingAddress);
 
         BigDecimal total = BigDecimal.ZERO;
-        List<OrderItem> orderItems = cartItems.stream().map(cartItem -> {
-            
-            // Check inventory (critical business logic)
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        for (CartItem cartItem : cartItems) {
             Product product = cartItem.getProduct();
             if (product.getStockQuantity() < cartItem.getQuantity()) {
-                 throw new RuntimeException("Insufficient stock for product: " + product.getName());
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
             }
-
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(newOrder);
             orderItem.setProductId(product.getId());
@@ -62,11 +57,14 @@ public class OrderService {
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPriceAtPurchase(product.getPrice());
 
+            BigDecimal line = product.getPrice().multiply(new BigDecimal(cartItem.getQuantity()));
+            total = total.add(line);
+
             product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
-            productRepository.save(product); // Save updated product stock
-            return orderItem;
-            
-        }).collect(Collectors.toList());
+            productRepository.save(product);
+
+            orderItems.add(orderItem);
+        }
 
         newOrder.setOrderItems(orderItems);
         newOrder.setTotalAmount(total);
@@ -79,10 +77,114 @@ public class OrderService {
 
         return savedOrder;
     }
-    
+    @Transactional
+    public Long createPendingOrder(String username, AddressDto address, List<OrderItemDto> itemsDto, BigDecimal total) {
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found."));
+
+        if (itemsDto == null || itemsDto.isEmpty()) {
+            throw new RuntimeException("Cannot create pending order: no items provided.");
+        }
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setStatus(OrderStatus.PENDING);
+        order.setShippingAddress(address.getStreet() + ", " + address.getCity() + ", " + address.getState());
+        order.setBillingAddress(address.getStreet() + ", " + address.getCity() + ", " + address.getState());
+        order.setTotalAmount(total);
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (OrderItemDto dto : itemsDto) {
+            Product product = productRepository.findById(dto.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + dto.getProductId()));
+
+            if (product.getStockQuantity() < dto.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            }
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProductId(product.getId());
+            orderItem.setProductName(product.getName());
+            orderItem.setQuantity(dto.getQuantity());
+            orderItem.setPriceAtPurchase(product.getPrice());
+            orderItems.add(orderItem);
+
+        }
+
+        order.setOrderItems(orderItems);
+        Order saved = orderRepository.save(order);
+        return saved.getId();
+    }
+
+    @Transactional
+    public Order finalizeOrderFromStripe(Long pendingOrderId, String stripePaymentId) {
+        Order order = orderRepository.findById(pendingOrderId)
+                .orElseThrow(() -> new RuntimeException("Pending order not found."));
+
+        if (order.getStatus() == OrderStatus.PAID) {
+            return order;
+        }
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Product product = productRepository.findById(orderItem.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + orderItem.getProductId()));
+            if (product.getStockQuantity() < orderItem.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product during finalize: " + product.getName());
+            }
+            product.setStockQuantity(product.getStockQuantity() - orderItem.getQuantity());
+            productRepository.save(product);
+        }
+
+        order.setStatus(OrderStatus.PAID);
+        order.setPaymentReference(stripePaymentId);
+
+        Order savedOrder = orderRepository.save(order);
+        Cart cart = cartService.getOrCreateCart(order.getUser().getEmail());
+        if (cart != null && cart.getCartItems() != null) {
+            cart.getCartItems().clear();
+            cartRepository.save(cart);
+        }
+
+        return savedOrder;
+    }
+
     public List<Order> getUserOrders(String username) {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found."));
         return orderRepository.findByUser(user);
+    }
+
+   
+    public static class AddressDto {
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String street;
+        private String city;
+        private String state;
+        private String zipcode;
+        private String country;
+        private String phone;
+
+        // getters & setters
+        public String getStreet() { return street; }
+        public String getCity() { return city; }
+        public String getState() { return state; }
+        public void setStreet(String s) { this.street = s; }
+        public void setCity(String s) { this.city = s; }
+        public void setState(String s) { this.state = s; }
+    }
+
+    public static class OrderItemDto {
+        private Long productId;
+        private int quantity;
+        private String size;
+        // getters & setters
+        public Long getProductId() { return productId; }
+        public int getQuantity() { return quantity; }
+        public void setProductId(Long id) { this.productId = id; }
+        public void setQuantity(int q) { this.quantity = q; }
+        public String getSize() { return size; }
+        public void setSize(String s) { this.size = s; }
     }
 }
