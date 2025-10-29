@@ -1,6 +1,6 @@
 package com.ecommerce.ecommerce_app.service;
 
-import jakarta.transaction.Transactional; // Crucial for multi-step database operations
+import jakarta.transaction.Transactional; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +28,7 @@ public class OrderService {
     @Autowired private CartService cartService;
     @Autowired private ProductRepository productRepository;
     @Autowired private CartRepository cartRepository;
-
-    // This method must succeed entirely or fail entirely (ACID properties)
+	
     @Transactional
     public Order placeOrder(String username, String shippingAddress, String billingAddress) {
         
@@ -42,15 +41,11 @@ public class OrderService {
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Cannot place order: Cart is empty.");
         }
-        
-        // 1. Create Order object
         Order newOrder = new Order();
-        newOrder.setUser(user);
-        //newOrder.setStatus(OrderStatus.PENDING); 
+        newOrder.setUser(user); 
         newOrder.setShippingAddress(shippingAddress);
         newOrder.setBillingAddress(billingAddress);
 
-        // 2. Map CartItems to OrderItems and calculate total
         BigDecimal total = BigDecimal.ZERO;
         List<OrderItem> orderItems = cartItems.stream().map(cartItem -> {
             
@@ -60,19 +55,15 @@ public class OrderService {
                  throw new RuntimeException("Insufficient stock for product: " + product.getName());
             }
 
-            // Create OrderItem
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(newOrder);
             orderItem.setProductId(product.getId());
             orderItem.setProductName(product.getName());
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPriceAtPurchase(product.getPrice());
-            
-            // Update inventory (DECREASE STOCK)
+
             product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
             productRepository.save(product); // Save updated product stock
-            
-           // total = total.add(product.getPrice().multiply(new BigDecimal(orderItem.getQuantity())));
             return orderItem;
             
         }).collect(Collectors.toList());
@@ -80,10 +71,8 @@ public class OrderService {
         newOrder.setOrderItems(orderItems);
         newOrder.setTotalAmount(total);
 
-        // 3. Save the new Order (this saves all OrderItems due to CascadeType.ALL)
         Order savedOrder = orderRepository.save(newOrder);
 
-        // 4. Clear the User's Cart (critical for cleanup)
         cartItems.clear();
         cart.setCartItems(cartItems);
         cartRepository.save(cart);
