@@ -11,20 +11,20 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Many-to-One with Cart
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id")
-    @JsonIgnore // Prevent infinite JSON loop
+    @JsonIgnore 
     private Cart cart;
 
-    // Many-to-One with Product
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+    
+    @Column(name = "size")
+    private String size; 
 
     private int quantity;
 
-    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -55,5 +55,13 @@ public class CartItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
     }
 }
