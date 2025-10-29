@@ -7,36 +7,29 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table; // Added @Table for completeness
+import jakarta.persistence.Table; 
+import com.fasterxml.jackson.annotation.JsonIgnore; 
 
 @Entity
-@Table(name = "users") // Added table annotation
+@Table(name = "users") 
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Use name as the user display name (you can map this to 'username' conceptually)
-    private String name; 
+    private String name;    
     
-    // Email is used for login (required)
     @Column(unique = true, nullable = false)
     private String email;
 
     @Column(nullable = false)
     private String password;
     
-    // You should add the Role property for Spring Security to work correctly
-    // private Role role = Role.USER; 
-    
-    // ✅ KEEP this: This is the correct relationship (User -> Cart)
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Cart cart; 
+    @JsonIgnore 
+    private Cart cart;    
     
-    // ❌ REMOVED: private List<CartItem> cartItems;
-    
-    // Getters & Setters
     public Long getId() {
         return id;
     }
@@ -67,5 +60,4 @@ public class User {
     public void setCart(Cart cart) {
         this.cart = cart;
     }
-    // ... (You should also have getters/setters for Role if you add it)
 }
