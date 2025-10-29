@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import axios from "axios";
+
 export const shopContext = createContext();
 
 export const ShopContextProvider = ({ children }) => {
@@ -14,6 +16,7 @@ export const ShopContextProvider = ({ children }) => {
   const delivery_fee = 40;
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  //const backendUrl = "http://localhost:8181";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -36,16 +39,32 @@ export const ShopContextProvider = ({ children }) => {
     fetchProducts();
   }, [backendUrl]);
 
-  const addToCart = (productId, size = "M", quantity = 1) => {
-    const key = productId.toString();
-    setCartItems((prev) => {
-      const updatedCart = { ...prev };
-      updatedCart[key] = updatedCart[key] || {};
-      updatedCart[key][size] = (updatedCart[key][size] || 0) + quantity;
-      return updatedCart;
-      
-    });
-    toast.success("Item Added To Cart");
+  const addToCart = async (productId, size = "M", quantity = 1) => {
+  const key = productId.toString();
+  setCartItems((prev) => {
+    const updatedCart = { ...prev };
+    updatedCart[key] = updatedCart[key] || {};
+    updatedCart[key][size] = (updatedCart[key][size] || 0) + quantity;
+    return updatedCart;
+  });
+
+  toast.success("Item Added To Cart");
+
+  try {
+    if (token) {
+      await axios.post(
+        `${backendUrl}/api/v1/cart/add`,
+        { productId, quantity, size },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } else {
+      console.warn("No token — skipping backend cart sync");
+    }
+  } catch (err) {
+    console.error("Failed to sync cart:", err);
+    toast.error("Could not sync cart with server");
+  }
+    
   };
 
   const updateQuantity = (productId, size, quantity) => {
@@ -95,6 +114,7 @@ export const ShopContextProvider = ({ children }) => {
         products,
         cartItems,
         addToCart,
+        setCartItems,
         updateQuantity,
         getCartAmount,
         getCartCount,
