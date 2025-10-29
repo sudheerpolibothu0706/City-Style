@@ -1,5 +1,7 @@
 package com.ecommerce.ecommerce_app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +17,7 @@ public class ProductSizes {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnore
     private Product product;
 
     public Long getId() {
