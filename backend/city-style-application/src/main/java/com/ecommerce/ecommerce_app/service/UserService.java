@@ -24,9 +24,7 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtil jwtutil;
- 
-    
-    //  Register a new user
+
     public ResponseEntity<String> saveUser(User user) {
         String useremail = user.getEmail();
         Optional<User> optionalUser = userRepository.findByEmail(useremail);
@@ -40,7 +38,6 @@ public class UserService {
         return ResponseEntity.ok("Registration Successful");
     }
 
-    //  Login user with email and password
     public UserResponse loginUser(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         
@@ -69,7 +66,5 @@ public class UserService {
         System.out.println(token);
         return response;
     }
-
-    
 
 }
