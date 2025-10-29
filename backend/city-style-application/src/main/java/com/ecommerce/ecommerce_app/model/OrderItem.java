@@ -11,18 +11,16 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // Many-to-One relationship with Order (this item belongs to this order)
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    // Store the product details at the time of purchase (denormalization for safety)
     private Long productId; 
     private String productName;
     
     private Integer quantity;
-    private BigDecimal priceAtPurchase; // The price when the order was created
+    private BigDecimal priceAtPurchase;
 	public Long getId() {
 		return id;
 	}
@@ -60,7 +58,4 @@ public class OrderItem {
 		this.priceAtPurchase = priceAtPurchase;
 	}
 
-    // NOTE: This relationship is NOT with the Product entity to ensure historical price data is preserved.
-    
-    
 }
