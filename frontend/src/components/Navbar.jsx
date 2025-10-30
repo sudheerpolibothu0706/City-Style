@@ -75,7 +75,7 @@ const Navbar = () => {
                 <p
                   className="cursor-pointer hover:text-black capitalize"
                   onClick={() => {
-                    navigate("/myorders");
+                    navigate("/orders");
                     setShowDropdown(false);
                   }}
                 >
@@ -128,7 +128,7 @@ const Navbar = () => {
           {token ? (
             <>
               <p className='text-gray-600 text-xl py-2 cursor-pointer hover:bg-gray-200' onClick={() => { navigate("/profile"); setMenuOpen(false); }}>My Profile</p>
-              <p className='text-gray-600 text-xl py-2 cursor-pointer hover:bg-gray-200' onClick={() => { navigate("/myorders"); setMenuOpen(false); }}>Orders</p>
+              <p className='text-gray-600 text-xl py-2 cursor-pointer hover:bg-gray-200' onClick={() => { navigate("/orders"); setMenuOpen(false); }}>Orders</p>
               <p className='text-gray-600 text-xl py-2 cursor-pointer hover:bg-gray-200' onClick={handleLogout}>Logout</p>
             </>
           ) : (
