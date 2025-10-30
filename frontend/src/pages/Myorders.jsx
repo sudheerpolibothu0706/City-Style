@@ -14,7 +14,7 @@ function Myorders () {
         return null;
       } else {
         const response = await axios.post(
-          backendUrl + "/api/v1/order/userorders",
+          backendUrl + "/api/v1/order/user",
           {},
           { headers: { Authorization: "Bearer " + token } }
         );
