@@ -92,6 +92,7 @@ onSubmit: async (values) => {
       return;
     }
 
+    console.log("Token being sent:", token);
     const response = await axios.post(
       backendUrl + "/api/v1/order/place",
       orderData,

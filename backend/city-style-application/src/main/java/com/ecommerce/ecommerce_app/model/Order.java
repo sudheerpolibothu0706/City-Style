@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.ecommerce.ecommerce_app.dto.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "orders")
@@ -15,8 +16,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     private LocalDateTime orderDate = LocalDateTime.now();
@@ -30,7 +32,7 @@ public class Order {
 
     private String paymentReference; 
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     private List<OrderItem> orderItems;
 
     public Long getId() {

@@ -10,13 +10,24 @@ export const ShopContextProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [token, setToken] = useState(null);
 
   const currency = "₹";
   const delivery_fee = 40;
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   //const backendUrl = "http://localhost:8181";
+
+    const [token, setToken] = useState(() => {
+    return localStorage.getItem("token") || null;
+  });
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
 
   useEffect(() => {
     const fetchProducts = async () => {

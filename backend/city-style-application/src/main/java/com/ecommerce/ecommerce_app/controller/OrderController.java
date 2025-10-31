@@ -3,6 +3,8 @@ package com.ecommerce.ecommerce_app.controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+
 import com.ecommerce.ecommerce_app.service.OrderService;
 import com.ecommerce.ecommerce_app.model.Order;
 import java.security.Principal;
@@ -68,7 +70,9 @@ public class OrderController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<Order>> getUserOrders(Principal principal) {
-        return ResponseEntity.ok(orderService.getUserOrders(principal.getName()));
+    public ResponseEntity<List<Order>> getUserOrders(Authentication authentication) {
+        String username = authentication.getName();
+        return ResponseEntity.ok(orderService.getUserOrders(username));
     }
+
 }
