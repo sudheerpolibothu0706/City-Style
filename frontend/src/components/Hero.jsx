@@ -4,8 +4,7 @@ import { assets } from '../assets/assets';
 const Hero = () => {
   return (
    
-    <div className='flex flex-col sm:flex-row border border-gray-400'> 
-
+   <div className="flex flex-col h-[100vh] sm:h-[70vh] sm:flex-row border border-gray-400">
       {/*Left side container*/}
       
       <div className='flex justify-center items-center w-full sm:w-1/2 py-10 sm:py-0'>
@@ -36,9 +35,9 @@ const Hero = () => {
       {/*Right side container*/}
       
       <img 
-        src={assets.hero_img} 
+        src="https://res.cloudinary.com/dg3lkz3jn/image/upload/v1761995348/city-style/products/skdf3ktn6l6mcfsy3xs8.jpg"
         alt="hero_img" 
-        className='w-full sm:w-1/2 object-cover' 
+        className='w-full  sm:w-1/2 object-cover' 
       />
     </div>
   )
