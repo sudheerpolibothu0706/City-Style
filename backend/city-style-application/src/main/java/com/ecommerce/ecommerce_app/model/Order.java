@@ -28,7 +28,6 @@ public class Order {
 
     private BigDecimal totalAmount;
     private String shippingAddress;
-    private String billingAddress;
 
     private String paymentReference; 
 
@@ -81,14 +80,6 @@ public class Order {
 
     public void setShippingAddress(String shippingAddress) {
         this.shippingAddress = shippingAddress;
-    }
-
-    public String getBillingAddress() {
-        return billingAddress;
-    }
-
-    public void setBillingAddress(String billingAddress) {
-        this.billingAddress = billingAddress;
     }
 
     public String getPaymentReference() {

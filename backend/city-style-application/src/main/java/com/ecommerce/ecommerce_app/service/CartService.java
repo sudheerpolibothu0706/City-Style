@@ -33,7 +33,7 @@ public class CartService {
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setUser(user);
-                    newCart.setCartItems(new ArrayList<>()); // Initialize list for safety
+                    newCart.setCartItems(new ArrayList<>()); 
                     return cartRepository.save(newCart);
                 });
     }
@@ -45,7 +45,7 @@ public class CartService {
         Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
             Cart newCart = new Cart();
             newCart.setUser(user);
-            newCart.setCartItems(new ArrayList<>()); // Initialize list for safety
+            newCart.setCartItems(new ArrayList<>()); 
             return cartRepository.save(newCart);
         });
 
@@ -69,7 +69,7 @@ public class CartService {
             newItem.setCart(cart);
             newItem.setProduct(product);
             newItem.setQuantity(quantity);
-            newItem.setSize(size); // Set size here
+            newItem.setSize(size);
             cartItemRepository.save(newItem);
             cart.getCartItems().add(newItem);
         }

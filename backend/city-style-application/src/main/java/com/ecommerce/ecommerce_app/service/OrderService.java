@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.ecommerce_app.dto.AddressDto;
+import com.ecommerce.ecommerce_app.dto.OrderItemDto;
 import com.ecommerce.ecommerce_app.dto.OrderStatus;
 import com.ecommerce.ecommerce_app.model.*;
 import com.ecommerce.ecommerce_app.repository.*;
@@ -40,7 +42,6 @@ public class OrderService {
         newOrder.setUser(user);
         newOrder.setStatus(OrderStatus.PENDING); 
         newOrder.setShippingAddress(shippingAddress);
-        newOrder.setBillingAddress(billingAddress);
 
         BigDecimal total = BigDecimal.ZERO;
         List<OrderItem> orderItems = new ArrayList<>();
@@ -89,7 +90,6 @@ public class OrderService {
         order.setUser(user);
         order.setStatus(OrderStatus.PENDING);
         order.setShippingAddress(address.getStreet() + ", " + address.getCity() + ", " + address.getState());
-        order.setBillingAddress(address.getStreet() + ", " + address.getCity() + ", " + address.getState());
         order.setTotalAmount(total);
 
         List<OrderItem> orderItems = new ArrayList<>();
@@ -154,37 +154,5 @@ public class OrderService {
         return orderRepository.findByUser(user);
     }
 
-   
-    public static class AddressDto {
-        private String firstName;
-        private String lastName;
-        private String email;
-        private String street;
-        private String city;
-        private String state;
-        private String zipcode;
-        private String country;
-        private String phone;
 
-        // getters & setters
-        public String getStreet() { return street; }
-        public String getCity() { return city; }
-        public String getState() { return state; }
-        public void setStreet(String s) { this.street = s; }
-        public void setCity(String s) { this.city = s; }
-        public void setState(String s) { this.state = s; }
-    }
-
-    public static class OrderItemDto {
-        private Long productId;
-        private int quantity;
-        private String size;
-        // getters & setters
-        public Long getProductId() { return productId; }
-        public int getQuantity() { return quantity; }
-        public void setProductId(Long id) { this.productId = id; }
-        public void setQuantity(int q) { this.quantity = q; }
-        public String getSize() { return size; }
-        public void setSize(String s) { this.size = s; }
-    }
 }
