@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import com.ecommerce.ecommerce_app.service.OrderService;
+import com.ecommerce.ecommerce_app.dto.AddressDto;
+import com.ecommerce.ecommerce_app.dto.OrderItemDto;
 import com.ecommerce.ecommerce_app.model.Order;
 import java.security.Principal;
 import java.util.List;
@@ -34,17 +36,17 @@ public class OrderController {
         List<Map<String, Object>> items = (List<Map<String, Object>>) body.get("items");
         Number amount = (Number) body.get("amount");
 
-        OrderService.AddressDto addressDto = new OrderService.AddressDto();
+       AddressDto addressDto = new AddressDto();
         if (addressMap != null) {
             addressDto.setStreet((String) addressMap.get("street"));
             addressDto.setCity((String) addressMap.get("city"));
             addressDto.setState((String) addressMap.get("state"));
         }
 
-        List<OrderService.OrderItemDto> itemsDto = new ArrayList<>();
+        List<OrderItemDto> itemsDto = new ArrayList<>();
         if (items != null) {
             for (Map<String, Object> it : items) {
-                OrderService.OrderItemDto dto = new OrderService.OrderItemDto();
+                OrderItemDto dto = new OrderItemDto();
                 Object pid = it.get("_id") != null ? it.get("_id") : it.get("productId");
                 Long productId = null;
                 if (pid instanceof Number) productId = ((Number) pid).longValue();
