@@ -169,7 +169,7 @@ function Login() {
             required
           />
           <div className="flex justify-between text-sm mt-[-8px]">
-            <p className="cursor-pointer text-blue-500" onClick={() => setCurrentState("Forgot")}>
+            <p className="cursor-pointer text-blue-500" onClick={() => setCurrentState("Recover Password")}>
               Forgot your password?
             </p>
             <p className="cursor-pointer text-blue-500" onClick={() => setCurrentState("SignUp")}>
@@ -263,7 +263,7 @@ function Login() {
         </div>
       )}
 
-      {currentState === "Forgot" && !showResetBox && (
+      {currentState === "Recover Password" && !showResetBox && (
         <div className="flex flex-col gap-4 w-[90%] sm:max-w-96">
           <p className="text-sm text-gray-700">
             Enter your email to receive OTP for password reset
