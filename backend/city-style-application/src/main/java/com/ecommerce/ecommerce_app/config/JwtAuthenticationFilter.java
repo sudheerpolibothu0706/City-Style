@@ -45,8 +45,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("JWT Authenticated user: " + username); 
+                System.out.println("Authorities: " + userDetails.getAuthorities());
+            } else {
+                System.out.println("JWT invalid for user: " + username);
             }
+        } else {
+            System.out.println("No username found in JWT or already authenticated");
         }
+
 
         chain.doFilter(request, response);
     }

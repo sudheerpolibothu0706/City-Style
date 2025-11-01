@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.ecommerce.ecommerce_app.model.User;
 
 import java.util.Collection;
+import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -17,7 +18,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null; // or implement roles if needed
+    	return Collections.emptyList();
     }
 
     @Override
