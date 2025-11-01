@@ -20,8 +20,6 @@ function Myorders() {
       });
 
       console.log("Order API response:", response.data);
-
-      // ✅ response.data is a plain array of orders
       if (Array.isArray(response.data)) {
         let allOrdersItem = [];
 
@@ -33,7 +31,6 @@ function Myorders() {
               status: order.status,
               totalAmount: order.totalAmount,
               shippingAddress: order.shippingAddress,
-              billingAddress: order.billingAddress,
               productId: item.productId,
               productName: item.productName,
               quantity: item.quantity,
@@ -42,7 +39,6 @@ function Myorders() {
           });
         });
 
-        // Reverse to show latest orders first
         setOrderData(allOrdersItem.reverse());
       } else {
         console.warn("Unexpected order response format:", response.data);
@@ -71,7 +67,6 @@ function Myorders() {
               className="py-4 border-t border-b text-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
             >
               <div className="flex flex-col sm:flex-row sm:items-start gap-6 text-sm">
-                {/* No product image in backend, so placeholder */}
                 <img
                   src="/placeholder-image.png"
                   alt={item.productName}
@@ -98,12 +93,6 @@ function Myorders() {
                     Shipping:{" "}
                     <span className="text-gray-500">
                       {item.shippingAddress}
-                    </span>
-                  </p>
-                  <p className="mt-1 text-sm">
-                    Billing:{" "}
-                    <span className="text-gray-500">
-                      {item.billingAddress}
                     </span>
                   </p>
                 </div>
