@@ -44,11 +44,13 @@ onSubmit: async (values) => {
           const itemInfo = structuredClone(
             products.find((product) => product.id === items)
           );
-          if (itemInfo) {
-            itemInfo.size = item;
-            itemInfo.quantity = cartItems[items][item];
-            orderItems.push(itemInfo);
+         if (itemInfo) {
+            orderItems.push({
+              productId: itemInfo.id, 
+              quantity: cartItems[items][item],
+            });
           }
+
         }
       }
     }
@@ -67,23 +69,20 @@ onSubmit: async (values) => {
 
     if (method === "stripe") {
   try {
-    // 1️⃣ Create a Pending Order first
     const pendingOrderResponse = await axios.post(
       `${backendUrl}/api/v1/order/pending`,
-      orderData, // same structure as COD orderData
+      orderData, 
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
     const pendingOrderId = pendingOrderResponse.data.pendingOrderId;
     console.log("✅ Pending order created:", pendingOrderId);
-
-    // 2️⃣ Create Stripe Session using that orderId
     const paymentRequest = {
       currency: "INR",
       productName: "Cart Order",
-      amount: (getCartAmount() + delivery_fee) * 100, // in paise for INR
+      amount: (getCartAmount() + delivery_fee) * 100, 
       quantity: 1,
-      orderId: pendingOrderId, // 👈 important
+      orderId: pendingOrderId, 
     };
 
     const paymentResponse = await axios.post(
