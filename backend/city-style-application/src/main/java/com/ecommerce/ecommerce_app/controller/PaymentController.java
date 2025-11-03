@@ -9,26 +9,23 @@ import com.ecommerce.ecommerce_app.dto.PaymentResponsedto;
 import com.ecommerce.ecommerce_app.service.PaymentService;
 import com.stripe.exception.StripeException;
 
+
 @RestController
 @RequestMapping("/api/v1/payment")
 public class PaymentController {
-	
+
     @Autowired
     private PaymentService paymentService;
-	
+
     @PostMapping("/create-session")
     public ResponseEntity<PaymentResponsedto> checkOut(@RequestBody PaymentRequestdto request) {
         try {
-        	System.out.println("payment controller to create session");
-            String sessionUrl = paymentService.createSession(request);
-            PaymentResponsedto response = new PaymentResponsedto(sessionUrl, null);
-            System.out.println("session created sucessful");
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-        catch (StripeException e) {
-            
-            PaymentResponsedto errorResponse = new PaymentResponsedto(null, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            String sessionUrl = paymentService.createSession(request, request.getOrderId());
+            return ResponseEntity.ok(new PaymentResponsedto(sessionUrl, null));
+        } catch (StripeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new PaymentResponsedto(null, e.getMessage()));
         }
     }
+
 }

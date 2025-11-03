@@ -25,11 +25,11 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status; 
-
     private BigDecimal totalAmount;
     private String shippingAddress;
 
     private String paymentReference; 
+    
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     private List<OrderItem> orderItems;

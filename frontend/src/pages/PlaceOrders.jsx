@@ -66,31 +66,49 @@ onSubmit: async (values) => {
 
 
     if (method === "stripe") {
-      const paymentRequest = {
-        currency: "INR",
-        productName: "Cart Order",
-        amount: (getCartAmount() + delivery_fee) * 100,
-        quantity: 1,
-      };
+  try {
+    // 1️⃣ Create a Pending Order first
+    const pendingOrderResponse = await axios.post(
+      `${backendUrl}/api/v1/order/pending`,
+      orderData, // same structure as COD orderData
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      console.log("Sending payment request:", paymentRequest);
+    const pendingOrderId = pendingOrderResponse.data.pendingOrderId;
+    console.log("✅ Pending order created:", pendingOrderId);
 
-      const res = await axios.post(
-        `${backendUrl}/api/v1/payment/create-session`,
-        paymentRequest,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    // 2️⃣ Create Stripe Session using that orderId
+    const paymentRequest = {
+      currency: "INR",
+      productName: "Cart Order",
+      amount: (getCartAmount() + delivery_fee) * 100, // in paise for INR
+      quantity: 1,
+      orderId: pendingOrderId, // 👈 important
+    };
 
-      console.log("Stripe API Response:", res.data);
+    const paymentResponse = await axios.post(
+      `${backendUrl}/api/v1/payment/create-session`,
+      paymentRequest,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      if (res.data.url) {
-        toast.success("Redirecting to Stripe Checkout...");
-        window.location.href = res.data.url; 
-      } else {
-        toast.error(res.data.error || "Unable to create Stripe session");
-      }
-      return;
+    console.log("Stripe API Response:", paymentResponse.data);
+
+    if (paymentResponse.data.sessionUrl) {
+      toast.success("Redirecting to Stripe Checkout...");
+      window.location.href = paymentResponse.data.sessionUrl; // 👈 redirect to Stripe
+    } else {
+      toast.error(paymentResponse.data.error || "Unable to create Stripe session");
     }
+
+  } catch (err) {
+    console.error("Stripe Payment Error:", err);
+    toast.error("Unable to process Stripe payment. Please try again.");
+  }
+
+  return; 
+}
+
 
     console.log("Token being sent:", token);
     const response = await axios.post(

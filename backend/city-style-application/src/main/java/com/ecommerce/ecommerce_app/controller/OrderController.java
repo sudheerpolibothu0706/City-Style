@@ -26,7 +26,7 @@ public class OrderController {
     public ResponseEntity<Order> placeOrder(@RequestBody Map<String, Object> body, Principal principal) {
         Map<String, Object> address = (Map<String, Object>) body.get("address");
         String street = address != null ? (String) address.get("street") : "";
-        Order order = orderService.placeOrder(principal.getName(), street, street);
+        Order order = orderService.placeOrder(principal.getName(), street);
         return ResponseEntity.ok(order);
     }
     

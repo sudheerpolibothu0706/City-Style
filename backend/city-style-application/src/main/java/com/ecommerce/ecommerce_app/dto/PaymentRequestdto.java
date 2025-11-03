@@ -7,7 +7,11 @@ public class PaymentRequestdto {
     private String productName;
     private Long amount;   
     private Long quantity;
-    
+    private Long orderId;
+
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
+
 	public String getCurrency() {
 		return currency;
 	}
@@ -30,6 +34,13 @@ public class PaymentRequestdto {
 		return quantity;
 	}
 	public void setQuantity(Long quantity) {
+		this.quantity = quantity;
+	}
+	public PaymentRequestdto(String currency, String productName, Long amount, Long quantity) {
+		super();
+		this.currency = currency;
+		this.productName = productName;
+		this.amount = amount;
 		this.quantity = quantity;
 	}
    

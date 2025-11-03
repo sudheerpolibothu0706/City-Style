@@ -26,7 +26,7 @@ public class OrderService {
     @Autowired private CartRepository cartRepository;
     
     @Transactional
-    public Order placeOrder(String username, String shippingAddress, String billingAddress) {
+    public Order placeOrder(String username, String shippingAddress) {
 
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found."));
@@ -121,7 +121,7 @@ public class OrderService {
         Order order = orderRepository.findById(pendingOrderId)
                 .orElseThrow(() -> new RuntimeException("Pending order not found."));
 
-        if (order.getStatus() == OrderStatus.PAID) {
+        if (order.getStatus() == OrderStatus.CONFIRMED) {
             return order;
         }
 
@@ -135,7 +135,7 @@ public class OrderService {
             productRepository.save(product);
         }
 
-        order.setStatus(OrderStatus.PAID);
+        order.setStatus(OrderStatus.CONFIRMED);
         order.setPaymentReference(stripePaymentId);
 
         Order savedOrder = orderRepository.save(order);
