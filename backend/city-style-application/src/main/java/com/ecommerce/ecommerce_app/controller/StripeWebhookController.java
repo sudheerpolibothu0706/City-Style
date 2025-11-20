@@ -29,7 +29,10 @@ public class StripeWebhookController {
             if (event.getData().getObject() != null) {
                 System.out.println("[Webhook] Event data: " + event.getData().getObject().toJson());
             }
+            orderService.finalizeOrderFromStripe(Long.parseLong(orderIdStr), paymentId);
 
+            System.out.println("[Webhook] Order updated successfully!");
+            
         } catch (Exception e) {
             System.err.println("[Webhook] Exception: " + e.getMessage());
             e.printStackTrace();
