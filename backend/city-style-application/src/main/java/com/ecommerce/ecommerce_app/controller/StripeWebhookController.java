@@ -10,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;  
+import java.util.stream.Collectors;             
+
 @RestController
 @RequestMapping("/api/v1/webhook")
 public class StripeWebhookController {
@@ -21,14 +24,19 @@ public class StripeWebhookController {
     private OrderService orderService;  
 
     @PostMapping
-    public ResponseEntity<String> handleStripeWebhook(
-            @RequestBody String payload,
-            @RequestHeader("Stripe-Signature") String sigHeader
-    ) {
+    public ResponseEntity<String> handleStripeWebhook(HttpServletRequest request) {
 
+        String payload;
+        try {
+            payload = request.getReader().lines().collect(Collectors.joining());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Could not read payload");
+        }
+
+        String sigHeader = request.getHeader("Stripe-Signature");
         String endpointSecret = paymentService.getWebhookSecret();
-        Event event;
 
+        Event event;
         try {
             event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
             System.out.println("[Webhook] Received event: " + event.getType());
@@ -36,36 +44,21 @@ public class StripeWebhookController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
         }
 
-        try {
-            if ("checkout.session.completed".equals(event.getType())) {
+        if ("checkout.session.completed".equals(event.getType())) {
 
-                // Extract session object
-                Session session = (Session) event.getDataObjectDeserializer()
-                        .getObject()
-                        .orElse(null);
+            Session session = (Session) event.getDataObjectDeserializer()
+                    .getObject()
+                    .orElse(null);
 
-                if (session == null) {
-                    System.out.println("[Webhook] Null session object");
-                    return ResponseEntity.ok("Ignored");
-                }
-
-                String orderIdStr = session.getMetadata().get("orderId");   
-                String paymentId = session.getPaymentIntent();              
-
-                System.out.println("[Webhook] Order ID: " + orderIdStr);
-                System.out.println("[Webhook] PaymentIntent: " + paymentId);
-
-                orderService.finalizeOrderFromStripe(Long.parseLong(orderIdStr), paymentId);
-
-                System.out.println("[Webhook] Order updated successfully");
+            if (session == null) {
+                System.out.println("[Webhook] ❌ Session is NULL — RAW BODY ISSUE");
+                return ResponseEntity.ok("Ignored");
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Webhook processing error");
-        }
+            String orderIdStr = session.getMetadata().get("orderId");
+            String paymentId = session.getPaymentIntent();
 
-        return ResponseEntity.ok("Success");
-    }
-}
+            System.out.println("[Webhook] Order ID = " + orderIdStr);
+            System.out.println("[Webhook] PaymentIntent = " + paymentId);
+
+            orderService.finalizeOrderFro
