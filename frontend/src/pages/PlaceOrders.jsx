@@ -34,25 +34,31 @@ function PlaceOrders() {
       country: "",
       phone: "",
     },
-onSubmit: async (values) => {
+    onSubmit: async (values) => {
   try {
     const orderItems = [];
 
-    for (const items in cartItems) {
-      for (const item in cartItems[items]) {
-        if (cartItems[items][item] > 0) {
-          const itemInfo = structuredClone(
-            products.find((product) => product.id === items)
+    Object.entries(cartItems).forEach(([productId, sizeMap]) => {
+      Object.entries(sizeMap).forEach(([size, quantity]) => {
+        if (quantity > 0) {
+          const product = products.find(
+            (p) => p.id === Number(productId)
           );
-         if (itemInfo) {
+
+          if (product) {
             orderItems.push({
-              productId: itemInfo.id, 
-              quantity: cartItems[items][item],
+              productId: product.id,
+              quantity: quantity,
+              size: size,  
             });
           }
-
         }
-      }
+      });
+    });
+
+    if (orderItems.length === 0) {
+      toast.error("Your cart is empty!");
+      return;
     }
 
     const orderData = {
@@ -65,62 +71,58 @@ onSubmit: async (values) => {
       toast.error("Login to place the order");
       return;
     }
-
-
     if (method === "stripe") {
-  try {
-    const pendingOrderResponse = await axios.post(
-      `${backendUrl}/api/v1/order/pending`,
-      orderData, 
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      try {
+        const pendingOrderResponse = await axios.post(
+          `${backendUrl}/api/v1/order/pending`,
+          orderData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-    const pendingOrderId = pendingOrderResponse.data.pendingOrderId;
-    console.log("✅ Pending order created:", pendingOrderId);
-    const paymentRequest = {
-      currency: "INR",
-      productName: "Cart Order",
-      amount: (getCartAmount() + delivery_fee) * 100, 
-      quantity: 1,
-      orderId: pendingOrderId, 
-    };
+        const pendingOrderId = pendingOrderResponse.data.pendingOrderId;
+        console.log("Pending Order Created:", pendingOrderId);
 
-    const paymentResponse = await axios.post(
-      `${backendUrl}/api/v1/payment/create-session`,
-      paymentRequest,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+        const paymentRequest = {
+          currency: "INR",
+          productName: "Cart Order",
+          amount: (getCartAmount() + delivery_fee) * 100, 
+          quantity: 1,
+          orderId: pendingOrderId,
+        };
 
-    console.log("Stripe API Response:", paymentResponse.data);
+  
+        const paymentResponse = await axios.post(
+          `${backendUrl}/api/v1/payment/create-session`,
+          paymentRequest,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-    if (paymentResponse.data.sessionUrl) {
-      toast.success("Redirecting to Stripe Checkout...");
-      window.location.href = paymentResponse.data.sessionUrl; // 👈 redirect to Stripe
-    } else {
-      toast.error(paymentResponse.data.error || "Unable to create Stripe session");
+        if (paymentResponse.data.sessionUrl) {
+          toast.success("Redirecting to Stripe Checkout...");
+          window.location.href = paymentResponse.data.sessionUrl;
+        } else {
+          toast.error(paymentResponse.data.error || "Stripe session creation failed");
+        }
+      } catch (err) {
+        console.error("Stripe Payment Error:", err.response || err);
+        toast.error("Unable to process Stripe payment.");
+      }
+
+      return; 
     }
 
-  } catch (err) {
-    console.error("Stripe Payment Error:", err);
-    toast.error("Unable to process Stripe payment. Please try again.");
-  }
-
-  return; 
-}
-
-
-    console.log("Token being sent:", token);
     const response = await axios.post(
-      backendUrl + "/api/v1/order/place",
+      `${backendUrl}/api/v1/order/place`,
       orderData,
-      { headers: { Authorization: "Bearer " + token } }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
 
     toast.success("Order placed successfully!");
     setCartItems({});
     navigate("/orders");
+
   } catch (err) {
-    console.error("Payment error:", err);
+    console.error("Payment error:", err.response || err);
     toast.error("Unable to process your order. Please try again.");
   }
 },
