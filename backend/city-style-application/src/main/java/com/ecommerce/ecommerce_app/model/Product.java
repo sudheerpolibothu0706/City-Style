@@ -3,6 +3,7 @@ package com.ecommerce.ecommerce_app.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "products")
@@ -26,9 +27,11 @@ public class Product {
     private String category;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<ProductSizes> sizes;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<ProductImageUrls> imageUrls;
 
     public Long getId() {
