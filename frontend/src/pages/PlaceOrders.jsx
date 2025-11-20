@@ -97,9 +97,9 @@ function PlaceOrders() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (paymentResponse.data.sessionUrl) {
+        if (paymentResponse.data.url) {
           toast.success("Redirecting to Stripe Checkout...");
-          window.location.href = paymentResponse.data.sessionUrl;
+          window.location.href = paymentResponse.data.url;
         } else {
           toast.error(paymentResponse.data.error || "Stripe session creation failed");
         }
