@@ -5,13 +5,14 @@ import com.ecommerce.ecommerce_app.service.PaymentService;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;  
-import java.util.stream.Collectors;             
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/webhook")
@@ -21,7 +22,7 @@ public class StripeWebhookController {
     private PaymentService paymentService;
 
     @Autowired
-    private OrderService orderService;  
+    private OrderService orderService;
 
     @PostMapping
     public ResponseEntity<String> handleStripeWebhook(HttpServletRequest request) {
@@ -61,4 +62,9 @@ public class StripeWebhookController {
             System.out.println("[Webhook] Order ID = " + orderIdStr);
             System.out.println("[Webhook] PaymentIntent = " + paymentId);
 
-            orderService.finalizeOrderFro
+            orderService.finalizeOrderFromStripe(Long.parseLong(orderIdStr), paymentId);
+        }
+
+        return ResponseEntity.ok("Success");
+    }
+}
