@@ -37,6 +37,9 @@ public class StripeWebhookController {
         String sigHeader = request.getHeader("Stripe-Signature");
         String endpointSecret = paymentService.getWebhookSecret();
 
+        System.out.println("[Webhook] endpointSecret = " + endpointSecret);
+        System.out.println("[Webhook] sigHeader = " + sigHeader);
+        System.out.println("Webhook Payload ="+ payload );
         Event event;
         try {
             event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
