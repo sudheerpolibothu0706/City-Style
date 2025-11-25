@@ -33,9 +33,6 @@ public class UserService {
     @Autowired
     private JwtUtil jwtutil;
 
-    @Autowired
-    private JavaMailSender mailSender;
-
     private static final Pattern PASSWORD_REGEX =
             Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
 
@@ -46,24 +43,21 @@ public class UserService {
 
     
 	private void sendEmail(String to, String subject, String text) {
-	    Email from = new Email("sudheerpolibhotu@gmail.com");
-	    Email toEmail = new Email(to);
-	    Content content = new Content("text/plain", text);
-	    Mail mail = new Mail(from, subject, toEmail, content);
-	
-	    SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
-	    Request request = new Request();
-	
-	    try {
-	        request.setMethod(Method.POST);
-	        request.setEndpoint("mail/send");
-	        request.setBody(mail.build());
-	        sg.api(request);
-	    } catch (Exception ex) {
-	        ex.printStackTrace();
-	        throw new RuntimeException("Failed to send email");
-	    }
-	}
+    Email from = new Email("sudheerpolibhotu@gmail.com");
+    Email toEmail = new Email(to);
+    Content content = new Content("text/plain", text);
+    Mail mail = new Mail(from, subject, toEmail, content);
+
+    SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+
+    try {
+        sg.send(mail); 
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        throw new RuntimeException("Failed to send email");
+    }
+  }
+
 
     private boolean isOtpValid(User user, String otp) {
         if (user.getVerificationOtp() == null || !user.getVerificationOtp().equals(otp)) return false;
