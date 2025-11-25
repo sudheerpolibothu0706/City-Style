@@ -7,8 +7,6 @@ import com.ecommerce.ecommerce_app.dto.UserResponse;
 import com.ecommerce.ecommerce_app.model.User;
 import com.ecommerce.ecommerce_app.repository.UserRepository;
 import com.sendgrid.*;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,23 +39,25 @@ public class UserService {
         return String.format("%06d", otp);
     }
 
-    
-	private void sendEmail(String to, String subject, String text) {
-    Email from = new Email("sudheerpolibhotu@gmail.com");
-    Email toEmail = new Email(to);
-    Content content = new Content("text/plain", text);
-    Mail mail = new Mail(from, subject, toEmail, content);
+    private void sendEmail(String to, String subject, String text) {
+        Email from = new Email("sudheerpolibhotu@gmail.com");
+        Email toEmail = new Email(to);
+        Content content = new Content("text/plain", text);
+        Mail mail = new Mail(from, subject, toEmail, content);
 
-    SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+        SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+        Request request = new Request();
 
-    try {
-        sg.send(mail); 
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        throw new RuntimeException("Failed to send email");
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            sg.api(request); // ✅ Correct for SendGrid 3.2
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException("Failed to send email");
+        }
     }
-  }
-
 
     private boolean isOtpValid(User user, String otp) {
         if (user.getVerificationOtp() == null || !user.getVerificationOtp().equals(otp)) return false;
@@ -65,7 +65,7 @@ public class UserService {
         return user.getOtpGeneratedAt().isAfter(LocalDateTime.now().minusMinutes(10));
     }
 
-    public ResponseEntity<UserResponse> registerUser(User user) throws MessagingException {
+    public ResponseEntity<UserResponse> registerUser(User user) {
         UserResponse response = new UserResponse();
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
@@ -87,7 +87,7 @@ public class UserService {
         userRepository.save(user);
         sendEmail(user.getEmail(), "Verify your account", "Your OTP is: " + otp);
 
-        response.setMessage(" Check your email for OTP verification.");
+        response.setMessage("Check your email for OTP verification.");
         return ResponseEntity.ok(response);
     }
 
@@ -106,7 +106,7 @@ public class UserService {
         user.setOtpGeneratedAt(null);
         userRepository.save(user);
 
-        return ResponseEntity.ok("Registred successfully");
+        return ResponseEntity.ok("Registered successfully");
     }
 
     public ResponseEntity<UserResponse> loginUser(String email, String password) {
@@ -146,12 +146,8 @@ public class UserService {
         user.setOtpGeneratedAt(LocalDateTime.now());
         userRepository.save(user);
 
-        try {
-			sendEmail(email, "Reset your password", "Your OTP is: " + otp);
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        sendEmail(email, "Reset your password", "Your OTP is: " + otp);
+
         return ResponseEntity.ok("OTP sent to your email");
     }
 
