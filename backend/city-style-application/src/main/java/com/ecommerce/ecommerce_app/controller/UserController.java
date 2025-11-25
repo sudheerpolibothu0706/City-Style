@@ -20,13 +20,7 @@ public class UserController {
 
     @PostMapping("/registration")
     public ResponseEntity<UserResponse> registerUser(@RequestBody User user) {
-        try {
-			return userService.registerUser(user);
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+		return userService.registerUser(user);
     }
 
     @PostMapping("/verify-email")
