@@ -6,7 +6,7 @@ import com.ecommerce.ecommerce_app.dto.OtpRequest;
 import com.ecommerce.ecommerce_app.dto.UserResponse;
 import com.ecommerce.ecommerce_app.model.User;
 import com.ecommerce.ecommerce_app.repository.UserRepository;
-
+import com.sendgrid.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
@@ -47,15 +47,26 @@ public class UserService {
         return String.format("%06d", otp);
     }
 
-    private void sendEmail(String to, String subject, String text) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        message.setFrom("sudheerpolibhotu@gmail.com"); 
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(text, true); 
-        mailSender.send(message);
-    }
+    
+	private void sendEmail(String to, String subject, String text) {
+	    Email from = new Email("sudheerpolibhotu@gmail.com");
+	    Email recipient = new Email(to);
+	    Content content = new Content("text/plain", text);
+	    Mail mail = new Mail(from, subject, recipient, content);
+	
+	    SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+	    Request request = new Request();
+	
+	    try {
+	        request.setMethod(Method.POST);
+	        request.setEndpoint("mail/send");
+	        request.setBody(mail.build());
+	        sg.api(request);
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        throw new RuntimeException("Failed to send email");
+	    }
+	}
     private boolean isOtpValid(User user, String otp) {
         if (user.getVerificationOtp() == null || !user.getVerificationOtp().equals(otp)) return false;
         if (user.getOtpGeneratedAt() == null) return false;
