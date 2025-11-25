@@ -8,21 +8,30 @@ WORKDIR /app
 # Path to your nested Spring Boot project
 ARG PROJECT_PATH=backend/city-style-application
 
-# Copy Maven wrapper and pom.xml
+# -------------------------
+# Step 1: Copy Maven wrapper and pom.xml first
+# -------------------------
 COPY ${PROJECT_PATH}/.mvn/ .mvn
 COPY ${PROJECT_PATH}/mvnw ${PROJECT_PATH}/pom.xml ./
 
-# Make Maven wrapper executable
 RUN chmod +x ./mvnw
 
-# Download dependencies (cached in a separate layer)
-RUN ./mvnw dependency:go-offline
+# -------------------------
+# Step 2: Force dependency resolution
+# -------------------------
+# Purge any old SendGrid versions and update all dependencies
+RUN ./mvnw dependency:purge-local-repository -DmanualInclude="com.sendgrid:sendgrid-java" -DreResolve=true
+RUN ./mvnw dependency:go-offline -U
 
-# Copy the source code
+# -------------------------
+# Step 3: Copy source code (after dependencies to leverage caching)
+# -------------------------
 COPY ${PROJECT_PATH}/src ./src
 
-# Build the Spring Boot application (skip tests to speed up build)
-RUN ./mvnw clean package -DskipTests
+# -------------------------
+# Step 4: Build JAR (skip tests to save time)
+# -------------------------
+RUN ./mvnw clean package -DskipTests -U
 
 # =========================
 # Stage 2: Runtime image
@@ -41,7 +50,8 @@ ENV PORT=8080 \
     SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD} \
     JWT_SECRET_KEY=${JWT_SECRET_KEY} \
     STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY} \
-    SENDGRID_API_KEY=${SENDGRID_API_KEY}  
+    SENDGRID_API_KEY=${SENDGRID_API_KEY}
+
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
