@@ -13,9 +13,6 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -50,9 +47,9 @@ public class UserService {
     
 	private void sendEmail(String to, String subject, String text) {
 	    Email from = new Email("sudheerpolibhotu@gmail.com");
-	    Email recipient = new Email(to);
+	    Email toEmail = new Email(to);
 	    Content content = new Content("text/plain", text);
-	    Mail mail = new Mail(from, subject, recipient, content);
+	    Mail mail = new Mail(from, subject, toEmail, content);
 	
 	    SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
 	    Request request = new Request();
@@ -67,6 +64,7 @@ public class UserService {
 	        throw new RuntimeException("Failed to send email");
 	    }
 	}
+
     private boolean isOtpValid(User user, String otp) {
         if (user.getVerificationOtp() == null || !user.getVerificationOtp().equals(otp)) return false;
         if (user.getOtpGeneratedAt() == null) return false;
