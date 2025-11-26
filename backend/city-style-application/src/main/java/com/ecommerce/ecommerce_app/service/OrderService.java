@@ -40,7 +40,7 @@ public class OrderService {
 
         Order newOrder = new Order();
         newOrder.setUser(user);
-        newOrder.setStatus(OrderStatus.PENDING); 
+        newOrder.setStatus(OrderStatus.COD); 
         newOrder.setShippingAddress(shippingAddress);
 
         BigDecimal total = BigDecimal.ZERO;
