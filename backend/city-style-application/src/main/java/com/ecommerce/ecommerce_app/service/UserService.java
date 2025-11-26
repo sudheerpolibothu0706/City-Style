@@ -6,13 +6,14 @@ import com.ecommerce.ecommerce_app.dto.OtpRequest;
 import com.ecommerce.ecommerce_app.dto.UserResponse;
 import com.ecommerce.ecommerce_app.model.User;
 import com.ecommerce.ecommerce_app.repository.UserRepository;
-import com.sendgrid.Content;
-import com.sendgrid.Email;
-import com.sendgrid.Mail;
-import com.sendgrid.Method;
-import com.sendgrid.Request;
 import com.sendgrid.SendGrid;
-
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.Method;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,24 +46,34 @@ public class UserService {
     }
 
     private void sendEmail(String to, String subject, String text) {
-        Email from = new Email("sudheerpolibhotu@gmail.com");
-        Email toEmail = new Email(to);
-        Content content = new Content("text/plain", text);
-        Mail mail = new Mail(from, subject, toEmail, content);
+    Email from = new Email("sudheerpolibhotu@gmail.com");
+    Email toEmail = new Email(to);
+    Content content = new Content("text/plain", text);
 
-        SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
-        Request request = new Request();
+    Mail mail = new Mail();
+    mail.setFrom(from);
+    mail.setSubject(subject);
 
-        try {
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-            sg.api(request);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException("Failed to send email");
-        }
+    Personalization personalization = new Personalization();
+    personalization.addTo(toEmail);
+
+    mail.addPersonalization(personalization);
+    mail.addContent(content);
+
+    SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+    Request request = new Request();
+
+    try {
+        request.setMethod(Method.POST);
+        request.setEndpoint("mail/send");
+        request.setBody(mail.build());
+        sg.api(request);
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        throw new RuntimeException("Failed to send email");
     }
+}
+
 
     private boolean isOtpValid(User user, String otp) {
         if (user.getVerificationOtp() == null || !user.getVerificationOtp().equals(otp)) return false;
