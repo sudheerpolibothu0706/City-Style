@@ -2,16 +2,15 @@ package com.ecommerce.ecommerce_app.controller;
 
 import com.ecommerce.ecommerce_app.service.OrderService;
 import com.ecommerce.ecommerce_app.service.PaymentService;
-import com.ecommerce.ecommerce_app.model.Order;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
-import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/v1/webhook")
@@ -22,6 +21,8 @@ public class StripeWebhookController {
 
     @Autowired
     private OrderService orderService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping
     public ResponseEntity<String> handleStripeWebhook(
@@ -50,40 +51,34 @@ public class StripeWebhookController {
         System.out.println("[Webhook] Event Type = " + event.getType());
 
         if ("checkout.session.completed".equals(event.getType())) {
-            Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
-
-            if (session == null) {
-                System.err.println("[Webhook] Session deserialization failed!");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Session null");
-            }
-
-            String orderIdStr = session.getMetadata().get("orderId");
-            String paymentId = session.getPaymentIntent();
-
-            System.out.println("[Webhook] Session ID = " + session.getId());
-            System.out.println("[Webhook] PaymentIntent = " + paymentId);
-            System.out.println("[Webhook] Metadata = " + session.getMetadata());
-
-            if (orderIdStr == null || paymentId == null) {
-                System.err.println("[Webhook] Missing orderId or paymentId in session metadata!");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing orderId or paymentId");
-            }
-
             try {
-                Long orderId = Long.parseLong(orderIdStr.trim());
-                Order updatedOrder = orderService.finalizeOrderFromStripe(orderId, paymentId);
+                // Parse the session as JSON instead of casting
+                JsonNode sessionNode = objectMapper.readTree(event.getDataObject().toJson());
 
-                if (updatedOrder != null) {
+                String orderIdStr = sessionNode.path("metadata").path("orderId").asText(null);
+                String paymentId = sessionNode.path("payment_intent").asText(null);
+
+                System.out.println("[Webhook] Parsed session JSON: " + sessionNode.toString());
+                System.out.println("[Webhook] Extracted orderId = " + orderIdStr + ", paymentId = " + paymentId);
+
+                if (orderIdStr == null || paymentId == null) {
+                    System.err.println("[Webhook] Missing orderId or paymentId in session metadata!");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing orderId or paymentId");
+                }
+
+                Long orderId = Long.parseLong(orderIdStr.trim());
+                boolean updated = orderService.finalizeOrderFromStripe(orderId, paymentId);
+
+                if (updated) {
                     System.out.println("[Webhook] Order " + orderId + " updated with PaymentIntent " + paymentId);
                 } else {
-                    System.err.println("[Webhook] Order " + orderId + " not updated!");
+                    System.err.println("[Webhook] Order " + orderId + " not found or not updated!");
                 }
-            } catch (NumberFormatException e) {
-                System.err.println("[Webhook] Invalid orderId format: " + orderIdStr);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid orderId format");
+
             } catch (Exception e) {
-                System.err.println("[Webhook] Error updating order: " + e.getMessage());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating order");
+                System.err.println("[Webhook] Error processing session: " + e.getMessage());
+                e.printStackTrace();
+                return ResponseEntity.ok("Webhook received but processing failed. Check logs.");
             }
         }
 
