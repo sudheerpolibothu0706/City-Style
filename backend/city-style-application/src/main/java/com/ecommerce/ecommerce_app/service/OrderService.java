@@ -145,7 +145,7 @@ public Order finalizeOrderFromStripe(Long pendingOrderId, String stripePaymentId
     }
 
     // Update order
-    order.setStatus(OrderStatus.CONFIRMED);
+    order.setStatus(OrderStatus.CONF);
     order.setPaymentReference(stripePaymentId);
 
     System.out.println("[Finalize] Saving order with status = " + order.getStatus() + ", paymentReference = " + stripePaymentId);
