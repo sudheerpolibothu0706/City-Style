@@ -25,49 +25,36 @@ public class StripeWebhookController {
     private OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<String> handleStripeWebhook(HttpServletRequest request) {
+    public ResponseEntity<String> handleStripeWebhook(
+            @RequestHeader("Stripe-Signature") String sigHeader,
+            @RequestBody byte[] payloadBytes) {
 
-        String payload;
-        try {
-            payload = request.getReader().lines().collect(Collectors.joining());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Could not read payload");
-        }
-
-        String sigHeader = request.getHeader("Stripe-Signature");
+        String payload = new String(payloadBytes);
         String endpointSecret = paymentService.getWebhookSecret();
 
-        System.out.println("[Webhook] endpointSecret = " + endpointSecret);
-        System.out.println("[Webhook] sigHeader = " + sigHeader);
-        System.out.println("Webhook Payload ="+ payload );
         Event event;
         try {
             event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
             System.out.println("[Webhook] Received event: " + event.getType());
         } catch (Exception e) {
+            System.err.println("[Webhook] Invalid signature: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
         }
 
         if ("checkout.session.completed".equals(event.getType())) {
+            Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
+            if (session != null) {
+                String orderIdStr = session.getMetadata().get("orderId");
+                String paymentId = session.getPaymentIntent();
 
-            Session session = (Session) event.getDataObjectDeserializer()
-                    .getObject()
-                    .orElse(null);
+                System.out.println("[Webhook] Order ID = " + orderIdStr);
+                System.out.println("[Webhook] PaymentIntent = " + paymentId);
 
-            if (session == null) {
-                System.out.println("[Webhook] ❌ Session is NULL — RAW BODY ISSUE");
-                return ResponseEntity.ok("Ignored");
+                orderService.finalizeOrderFromStripe(Long.parseLong(orderIdStr), paymentId);
             }
-
-            String orderIdStr = session.getMetadata().get("orderId");
-            String paymentId = session.getPaymentIntent();
-
-            System.out.println("[Webhook] Order ID = " + orderIdStr);
-            System.out.println("[Webhook] PaymentIntent = " + paymentId);
-
-            orderService.finalizeOrderFromStripe(Long.parseLong(orderIdStr), paymentId);
         }
 
         return ResponseEntity.ok("Success");
     }
 }
+
