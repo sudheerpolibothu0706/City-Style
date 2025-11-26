@@ -2,6 +2,7 @@ package com.ecommerce.ecommerce_app.controller;
 
 import com.ecommerce.ecommerce_app.service.OrderService;
 import com.ecommerce.ecommerce_app.service.PaymentService;
+import com.ecommerce.ecommerce_app.model.Order;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
@@ -56,7 +57,6 @@ public class StripeWebhookController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Session null");
             }
 
-            
             String orderIdStr = session.getMetadata().get("orderId");
             String paymentId = session.getPaymentIntent();
 
@@ -71,12 +71,12 @@ public class StripeWebhookController {
 
             try {
                 Long orderId = Long.parseLong(orderIdStr.trim());
-                boolean updated = orderService.finalizeOrderFromStripe(orderId, paymentId);
+                Order updatedOrder = orderService.finalizeOrderFromStripe(orderId, paymentId);
 
-                if (updated) {
+                if (updatedOrder != null) {
                     System.out.println("[Webhook] Order " + orderId + " updated with PaymentIntent " + paymentId);
                 } else {
-                    System.err.println("[Webhook] Order " + orderId + " not found or not updated!");
+                    System.err.println("[Webhook] Order " + orderId + " not updated!");
                 }
             } catch (NumberFormatException e) {
                 System.err.println("[Webhook] Invalid orderId format: " + orderIdStr);
