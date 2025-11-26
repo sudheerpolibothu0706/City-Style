@@ -1,16 +1,17 @@
 package com.ecommerce.ecommerce_app.controller;
 
+import com.ecommerce.ecommerce_app.model.Order;
 import com.ecommerce.ecommerce_app.service.OrderService;
 import com.ecommerce.ecommerce_app.service.PaymentService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.net.Webhook;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/v1/webhook")
@@ -39,6 +40,7 @@ public class StripeWebhookController {
 
         Event event;
         try {
+            // Correct method for latest Stripe SDK
             event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
         } catch (SignatureVerificationException e) {
             System.err.println("[Webhook] Invalid signature: " + e.getMessage());
@@ -52,8 +54,8 @@ public class StripeWebhookController {
 
         if ("checkout.session.completed".equals(event.getType())) {
             try {
-                // Parse the session as JSON instead of casting
-                JsonNode sessionNode = objectMapper.readTree(event.getDataObject().toJson());
+                // Use getData().getObject() for Stripe v20+
+                JsonNode sessionNode = objectMapper.readTree(event.getData().getObject().toJson());
 
                 String orderIdStr = sessionNode.path("metadata").path("orderId").asText(null);
                 String paymentId = sessionNode.path("payment_intent").asText(null);
@@ -67,9 +69,10 @@ public class StripeWebhookController {
                 }
 
                 Long orderId = Long.parseLong(orderIdStr.trim());
-                boolean updated = orderService.finalizeOrderFromStripe(orderId, paymentId);
+                // Keep your existing OrderService return type
+                Order order = orderService.finalizeOrderFromStripe(orderId, paymentId);
 
-                if (updated) {
+                if (order != null) {
                     System.out.println("[Webhook] Order " + orderId + " updated with PaymentIntent " + paymentId);
                 } else {
                     System.err.println("[Webhook] Order " + orderId + " not found or not updated!");
