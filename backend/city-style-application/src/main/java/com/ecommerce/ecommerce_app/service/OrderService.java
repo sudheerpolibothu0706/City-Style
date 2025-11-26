@@ -128,7 +128,7 @@ public class OrderService {
             ", paymentReference = " + order.getPaymentReference());
 
     // If already confirmed, skip
-    if (OrderStatus.CONF.equals(order.getStatus())) {
+    if (OrderStatus.C.equals(order.getStatus())) {
         System.out.println("[Finalize] Order already CONFIRMED. Skipping update.");
         return order;
     }
@@ -148,7 +148,7 @@ public class OrderService {
     }
 
     // Update order status & payment reference
-    order.setStatus(OrderStatus.CONF);
+    order.setStatus(OrderStatus.C);
     order.setPaymentReference(stripePaymentId);
     Order savedOrder = orderRepository.saveAndFlush(order); // flush ensures DB commit
 
