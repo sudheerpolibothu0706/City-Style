@@ -1,8 +1,7 @@
 package com.ecommerce.ecommerce_app.dto;
 
 public enum OrderStatus {
-    PENDING,
+    P,
     C,
-    CANCELLED,
-    REFUNDED
+    R
 }
