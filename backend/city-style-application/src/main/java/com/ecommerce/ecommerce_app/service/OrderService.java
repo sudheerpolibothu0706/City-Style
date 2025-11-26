@@ -126,7 +126,7 @@ public Order finalizeOrderFromStripe(Long pendingOrderId, String stripePaymentId
     System.out.println("[Finalize] Current order status = " + order.getStatus() + ", paymentReference = " + order.getPaymentReference());
 
     // If already confirmed, return early
-    if (OrderStatus.CONFIRMED.equals(order.getStatus())) {
+    if (OrderStatus.CONF.equals(order.getStatus())) {
         System.out.println("[Finalize] Order already CONFIRMED. Skipping update.");
         return order;
     }
