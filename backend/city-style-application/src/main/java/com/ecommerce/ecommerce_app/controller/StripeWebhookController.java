@@ -26,65 +26,56 @@ public class StripeWebhookController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping
-    public ResponseEntity<String> handleStripeWebhook(
-            @RequestHeader("Stripe-Signature") String sigHeader,
-            @RequestBody byte[] payloadBytes) {
+public ResponseEntity<String> handleStripeWebhook(
+        @RequestHeader("Stripe-Signature") String sigHeader,
+        @RequestBody byte[] payloadBytes) {
 
-        String payload = new String(payloadBytes);
-        String endpointSecret = paymentService.getWebhookSecret();
+    String payload = new String(payloadBytes);
+    String endpointSecret = paymentService.getWebhookSecret();
 
-        System.out.println("[Webhook] Received Stripe event");
-        System.out.println("[Webhook] Endpoint Secret = " + endpointSecret);
-        System.out.println("[Webhook] Signature Header = " + sigHeader);
-        System.out.println("[Webhook] Raw Payload = " + payload);
+    System.out.println("[Webhook] Received Stripe event");
+    System.out.println("[Webhook] Endpoint Secret = " + endpointSecret);
+    System.out.println("[Webhook] Signature Header = " + sigHeader);
 
-        Event event;
-        try {
-            // Correct method for latest Stripe SDK
-            event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
-        } catch (SignatureVerificationException e) {
-            System.err.println("[Webhook] Invalid signature: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
-        } catch (Exception e) {
-            System.err.println("[Webhook] Error parsing event: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Webhook error");
-        }
-
-        System.out.println("[Webhook] Event Type = " + event.getType());
-
-        if ("checkout.session.completed".equals(event.getType())) {
-            try {
-                // Use getData().getObject() for Stripe v20+
-                JsonNode sessionNode = objectMapper.readTree(event.getData().getObject().toJson());
-
-                String orderIdStr = sessionNode.path("metadata").path("orderId").asText(null);
-                String paymentId = sessionNode.path("payment_intent").asText(null);
-
-                System.out.println("[Webhook] Parsed session JSON: " + sessionNode.toString());
-                System.out.println("[Webhook] Extracted orderId = " + orderIdStr + ", paymentId = " + paymentId);
-
-                if (orderIdStr == null || paymentId == null) {
-                    System.err.println("[Webhook] Missing orderId or paymentId in session metadata!");
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing orderId or paymentId");
-                }
-
-                Long orderId = Long.parseLong(orderIdStr.trim());
-                // Keep your existing OrderService return type
-                Order order = orderService.finalizeOrderFromStripe(orderId, paymentId);
-
-                if (order != null) {
-                    System.out.println("[Webhook] Order " + orderId + " updated with PaymentIntent " + paymentId);
-                } else {
-                    System.err.println("[Webhook] Order " + orderId + " not found or not updated!");
-                }
-
-            } catch (Exception e) {
-                System.err.println("[Webhook] Error processing session: " + e.getMessage());
-                e.printStackTrace();
-                return ResponseEntity.ok("Webhook received but processing failed. Check logs.");
-            }
-        }
-
-        return ResponseEntity.ok("Success");
+    Event event;
+    try {
+        event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
+    } catch (SignatureVerificationException e) {
+        System.err.println("[Webhook] Invalid signature: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
+    } catch (Exception e) {
+        System.err.println("[Webhook] Error parsing event: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Webhook error");
     }
+
+    System.out.println("[Webhook] Event Type = " + event.getType());
+    System.out.println("[Webhook] livemode=" + event.getLivemode() +
+                       ", pending_webhooks=" + event.getPendingWebhooks());
+
+    if ("checkout.session.completed".equals(event.getType())) {
+        try {
+            JsonNode sessionNode = new ObjectMapper().readTree(event.getData().getObject().toJson());
+            String orderIdStr = sessionNode.path("metadata").path("orderId").asText(null);
+            String paymentId = sessionNode.path("payment_intent").asText(null);
+
+            if (orderIdStr == null || paymentId == null) {
+                System.err.println("[Webhook] Missing orderId or paymentId in session metadata!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing orderId or paymentId");
+            }
+
+            Long orderId = Long.parseLong(orderIdStr.trim());
+            orderService.finalizeOrderFromStripe(orderId, paymentId);
+            System.out.println("[Webhook] Order " + orderId + " finalized with PaymentIntent " + paymentId);
+
+        } catch (Exception e) {
+            System.err.println("[Webhook] Error processing session: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error processing checkout.session.completed");
+        }
+    }
+
+    return ResponseEntity.ok("Success");
+}
+
 }
