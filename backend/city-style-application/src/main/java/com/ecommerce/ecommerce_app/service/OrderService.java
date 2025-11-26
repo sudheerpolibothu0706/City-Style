@@ -116,37 +116,60 @@ public class OrderService {
         return saved.getId();
     }
 
-    @Transactional
-    public Order finalizeOrderFromStripe(Long pendingOrderId, String stripePaymentId) {
-        Order order = orderRepository.findById(pendingOrderId)
-                .orElseThrow(() -> new RuntimeException("Pending order not found."));
+@Transactional
+public Order finalizeOrderFromStripe(Long pendingOrderId, String stripePaymentId) {
+    System.out.println("[Finalize] Starting finalizeOrderFromStripe for orderId = " + pendingOrderId);
 
-        if (order.getStatus() == OrderStatus.CONFIRMED) {
-            return order;
-        }
+    Order order = orderRepository.findById(pendingOrderId)
+            .orElseThrow(() -> new RuntimeException("Pending order not found with ID: " + pendingOrderId));
 
-        for (OrderItem orderItem : order.getOrderItems()) {
-            Product product = productRepository.findById(orderItem.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + orderItem.getProductId()));
-            if (product.getStockQuantity() < orderItem.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for product during finalize: " + product.getName());
-            }
-            product.setStockQuantity(product.getStockQuantity() - orderItem.getQuantity());
-            productRepository.save(product);
-        }
+    System.out.println("[Finalize] Current order status = " + order.getStatus() + ", paymentReference = " + order.getPaymentReference());
 
-        order.setStatus(OrderStatus.CONFIRMED);
-        order.setPaymentReference(stripePaymentId);
-
-        Order savedOrder = orderRepository.save(order);
-        Cart cart = cartService.getOrCreateCart(order.getUser().getEmail());
-        if (cart != null && cart.getCartItems() != null) {
-            cart.getCartItems().clear();
-            cartRepository.save(cart);
-        }
-
-        return savedOrder;
+    // If already confirmed, return early
+    if (OrderStatus.CONFIRMED.equals(order.getStatus())) {
+        System.out.println("[Finalize] Order already CONFIRMED. Skipping update.");
+        return order;
     }
+
+    // Check stock and deduct
+    for (OrderItem orderItem : order.getOrderItems()) {
+        Product product = productRepository.findById(orderItem.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found: " + orderItem.getProductId()));
+
+        if (product.getStockQuantity() < orderItem.getQuantity()) {
+            throw new RuntimeException("Insufficient stock for product during finalize: " + product.getName());
+        }
+
+        product.setStockQuantity(product.getStockQuantity() - orderItem.getQuantity());
+        productRepository.save(product);
+    }
+
+    // Update order
+    order.setStatus(OrderStatus.CONFIRMED);
+    order.setPaymentReference(stripePaymentId);
+
+    System.out.println("[Finalize] Saving order with status = " + order.getStatus() + ", paymentReference = " + stripePaymentId);
+    Order savedOrder = orderRepository.save(order);
+
+    // Force flush to DB immediately
+    orderRepository.flush();
+
+    System.out.println("[Finalize] Order saved. Verifying saved data:");
+    System.out.println("[Finalize] Saved order status = " + savedOrder.getStatus() + ", paymentReference = " + savedOrder.getPaymentReference());
+
+    // Clear user's cart
+    Cart cart = cartService.getOrCreateCart(order.getUser().getEmail());
+    if (cart != null && cart.getCartItems() != null) {
+        cart.getCartItems().clear();
+        cartRepository.save(cart);
+        cartRepository.flush();
+        System.out.println("[Finalize] User cart cleared.");
+    }
+
+    System.out.println("[Finalize] finalizeOrderFromStripe completed for orderId = " + pendingOrderId);
+    return savedOrder;
+}
+
 
     public List<Order> getUserOrders(String username) {
         User user = userRepository.findByEmail(username)
