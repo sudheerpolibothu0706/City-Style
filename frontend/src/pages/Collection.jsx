@@ -71,6 +71,7 @@ function Collection() {
 
   return (
     <div className="flex sm:flex-row gap-1 sm:gap-10 pt-10 border-t flex-col px-4 sm:px-10">
+      {/* 
       <div className="min-w-60">
         <p
           className="uppercase my-2 text-xl flex items-center cursor-pointer gap-2"
@@ -112,7 +113,7 @@ function Collection() {
           </div>
         </div>
       </div>
-
+           */}
       <div className="flex-1">
         <div className="flex justify-between flex-wrap text-base sm:text-2xl mb-4">
           <Title text1={"ALL"} text2={"COLLECTIONS"} />

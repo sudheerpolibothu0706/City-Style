@@ -37,6 +37,7 @@ function PlaceOrders() {
       phone: "",
     },
     onSubmit: async (values) => {
+      setLoading(true);
   try {
     const orderItems = [];
 
@@ -92,7 +93,7 @@ function PlaceOrders() {
           orderId: pendingOrderId,
         };
 
-        setLoading(true);
+        
         const paymentResponse = await axios.post(
           `${backendUrl}/api/v1/payment/create-session`,
           paymentRequest,
