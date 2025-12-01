@@ -7,10 +7,12 @@ import { useFormik } from "formik";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Loader from "../components/Loader";
 
 function PlaceOrders() {
   const [method, setMethod] = useState("cod");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const {
     backendUrl,
@@ -90,7 +92,7 @@ function PlaceOrders() {
           orderId: pendingOrderId,
         };
 
-  
+        setLoading(true);
         const paymentResponse = await axios.post(
           `${backendUrl}/api/v1/payment/create-session`,
           paymentRequest,
@@ -107,7 +109,9 @@ function PlaceOrders() {
         console.error("Stripe Payment Error:", err.response || err);
         toast.error("Unable to process Stripe payment.");
       }
-
+       finally {
+        setLoading(false);
+        }
       return; 
     }
 
@@ -130,7 +134,7 @@ function PlaceOrders() {
 
   return (
     <div>
-      
+      {loading && <Loader />}
       <form
         onSubmit={formik.handleSubmit}
         className="flex flex-col sm:flex-row justify-between gap-4 pt-2 sm:pt-14 min-h-[80vh] border-t"

@@ -176,7 +176,7 @@ function Login() {
 
   return (
     <div className="flex flex-col items-center justify-center mt-10 text-gray-800">
-      
+      {loading && <Loader />}
       <div className="inline-flex items-center gap-2 mb-2 mt-10">
         <p className="text-3xl font-semibold">{currentState}</p>
         <hr className="border-none h-[1.5px] w-8 bg-gray-800" />
