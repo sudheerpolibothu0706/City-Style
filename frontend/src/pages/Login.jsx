@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { shopContext } from "../context/ShopContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Loader from "../components/Loader";
 
 function Login() {
   const [currentState, setCurrentState] = useState("Login");
   const { navigate, backendUrl, token, setToken } = useContext(shopContext);
+  const [loading, setLoading] = useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -54,7 +56,7 @@ function Login() {
 
     if (password.trim() !== confirmPassword.trim())
       return toast.error("Passwords do not match");
-
+    setLoading(true);
     try {
       const res = await axios.post(`${backendUrl}/api/v1/user/registration`, {
         name,
@@ -66,6 +68,9 @@ function Login() {
       setShowOtpBox(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed");
+    }
+    finally {
+    setLoading(false);
     }
   };
 
@@ -92,7 +97,7 @@ function Login() {
 
     if (!validateEmail(email)) return toast.error("Invalid email");
     if (!password) return toast.error("Enter password");
-
+     setLoading(true);
     try {
       const res = await axios.post(`${backendUrl}/api/v1/user/login`, {
         email,
@@ -109,6 +114,9 @@ function Login() {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
+    }
+    finally {
+    setLoading(false);
     }
   };
 
