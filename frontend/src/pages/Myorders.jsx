@@ -33,6 +33,7 @@ function Myorders() {
               shippingAddress: order.shippingAddress,
               productId: item.productId,
               productName: item.productName,
+              imageAtPurchase: item.imageAtPurchase, 
               quantity: item.quantity,
               price: item.priceAtPurchase,
             });
@@ -68,7 +69,7 @@ function Myorders() {
             >
               <div className="flex flex-col sm:flex-row sm:items-start gap-6 text-sm">
                 <img
-                  src="/placeholder-image.png"
+                  src={item.imageAtPurchase}
                   alt={item.productName}
                   className="w-16 sm:w-20 rounded"
                 />

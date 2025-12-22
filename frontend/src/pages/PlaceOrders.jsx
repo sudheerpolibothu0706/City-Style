@@ -60,6 +60,7 @@ function PlaceOrders() {
     });
 
     if (orderItems.length === 0) {
+      setLoading(false);
       toast.error("Your cart is empty!");
       return;
     }
@@ -71,6 +72,7 @@ function PlaceOrders() {
     };
 
     if (!token) {
+      setLoading(false);
       toast.error("Login to place the order");
       return;
     }

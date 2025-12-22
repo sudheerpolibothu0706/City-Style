@@ -57,6 +57,14 @@ public class OrderService {
             orderItem.setProductName(product.getName());
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPriceAtPurchase(product.getPrice());
+            
+            String imageUrl = null;
+
+            if (product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {
+                imageUrl = product.getImageUrls().get(0).getImageUrl();
+            }
+
+            orderItem.setImageAtPurchase(imageUrl);
 
             BigDecimal line = product.getPrice().multiply(new BigDecimal(cartItem.getQuantity()));
             total = total.add(line);
@@ -108,6 +116,14 @@ public class OrderService {
             orderItem.setQuantity(dto.getQuantity());
             orderItem.setPriceAtPurchase(product.getPrice());
             orderItems.add(orderItem);
+            
+            String imageUrl = null;
+
+            if (product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {
+                imageUrl = product.getImageUrls().get(0).getImageUrl(); 
+            }
+
+            orderItem.setImageAtPurchase(imageUrl);
 
         }
 
@@ -118,22 +134,15 @@ public class OrderService {
 
     @Transactional
     public Order finalizeOrderFromStripe(Long pendingOrderId, String stripePaymentId) {
-    System.out.println("[Finalize] Starting finalizeOrderFromStripe for orderId = " + pendingOrderId);
 
-    // Fetch order from DB
     Order order = orderRepository.findById(pendingOrderId)
             .orElseThrow(() -> new RuntimeException("Pending order not found with ID: " + pendingOrderId));
 
-    System.out.println("[Finalize] Current order status = " + order.getStatus() +
-            ", paymentReference = " + order.getPaymentReference());
 
-    // If already confirmed, skip
     if (OrderStatus.PAID.equals(order.getStatus())) {
-        System.out.println("[Finalize] Order already CONFIRMED. Skipping update.");
         return order;
     }
 
-    // Deduct stock ONLY at finalization
     for (OrderItem orderItem : order.getOrderItems()) {
         Product product = productRepository.findById(orderItem.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found: " + orderItem.getProductId()));
@@ -144,32 +153,23 @@ public class OrderService {
 
         product.setStockQuantity(product.getStockQuantity() - orderItem.getQuantity());
         productRepository.save(product);
-        System.out.println("[Finalize] Stock deducted for product: " + product.getName());
     }
 
-    // Update order status & payment reference
     order.setStatus(OrderStatus.PAID);
     order.setPaymentReference(stripePaymentId);
-    Order savedOrder = orderRepository.saveAndFlush(order); // flush ensures DB commit
+    Order savedOrder = orderRepository.saveAndFlush(order); 
 
-    System.out.println("[Finalize] Order updated: status=" + savedOrder.getStatus() +
-            ", paymentReference=" + savedOrder.getPaymentReference());
 
-    // Clear user's cart
     Cart cart = cartService.getOrCreateCart(order.getUser().getEmail());
     if (cart != null && cart.getCartItems() != null) {
         cart.getCartItems().clear();
         cartRepository.saveAndFlush(cart);
-        System.out.println("[Finalize] User cart cleared.");
+        
     }
 
-    // Verify DB
     Order check = orderRepository.findById(savedOrder.getId())
             .orElseThrow(() -> new RuntimeException("Order not found after save!"));
-    System.out.println("[Finalize] DB verification: status=" + check.getStatus() +
-            ", paymentReference=" + check.getPaymentReference());
 
-    System.out.println("[Finalize] finalizeOrderFromStripe completed for orderId = " + pendingOrderId);
     return check;
     }
 

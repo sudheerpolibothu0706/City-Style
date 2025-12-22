@@ -21,7 +21,7 @@ public class OrderItem {
 
     private Long productId; 
     private String productName;
-    
+    private String imageAtPurchase;
     private Integer quantity;
     private BigDecimal priceAtPurchase;
 	public Long getId() {
@@ -44,6 +44,12 @@ public class OrderItem {
 	}
 	public String getProductName() {
 		return productName;
+	}
+	public String getImageAtPurchase() {
+		return imageAtPurchase;
+	}
+	public void setImageAtPurchase(String imageAtPurchase) {
+		this.imageAtPurchase = imageAtPurchase;
 	}
 	public void setProductName(String productName) {
 		this.productName = productName;
